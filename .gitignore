@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Database & Dumps
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+db_dump.txt
+sql_dump_summary.txt
+
+# Binaries, Executables & Archives
+*.exe
+*.zip
+*.tar.gz
+*.gz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp / debug scripts in root (use scripts/ or tests/ instead)
+dump_db.py
+parse_sql_dump.py
+check_db.py
+extract_keys.py
+
+# Temporary files
+*.tmp
+*.temp
+
+# Large assets (keep in cloud storage, not git)
+*.pdf
