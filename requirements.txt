@@ -10,3 +10,5 @@ requests
 deepgram-sdk
 aiohttp
 sarvamai
+faiss-cpu
+sentence-transformers

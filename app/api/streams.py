@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db, SessionLocal
 from app.services.sarvam_service import SarvamService
 from app.services.orchestrator import Orchestrator
-from app.services.ai_agent import stream_ai_response_sentences
+from app.services.ai_agent import stream_ai_response_sentences, warmup_llm
 from app.core.models import Lead
 from app.services.state import ConversationState
 
@@ -220,7 +220,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     stage_instr = orch._stage_instruction(state_obj)
                     system_instruction_inner = (lang_instruction + "\n" + stage_instr) if stage_instr else lang_instruction
                     from app.services.db_context import build_catalog_context
-                    catalog_inner = build_catalog_context(db, polymer=state_obj.customer.polymer_needed)
+                    catalog_inner = build_catalog_context(
+                        db,
+                        polymer=state_obj.customer.polymer_needed,
+                        brand=state_obj.customer.brand_preferred,
+                        grade=state_obj.customer.grade_needed,
+                        location=state_obj.customer.factory_location,
+                        quantity_needed=state_obj.customer.quantity_needed,
+                    )
                     # stage advancement is now handled inside orchestrator.py:process_message
                     # so we don't hardcode it here anymore.
                     return state_obj, system_instruction_inner, catalog_inner
@@ -243,13 +250,16 @@ async def websocket_endpoint(websocket: WebSocket):
                 async for sentence, result_dict in stream_ai_response_sentences(
                     transcript, state, system_instruction, catalog
                 ):
-                    if interruption_event.is_set():
-                        logger.info("[STREAM] Producer interrupted by user. Stopping.")
-                        break
-
                     if result_dict is not None:
                         # Last yield from generator — contains parsed JSON
                         final_result = result_dict
+                        break
+
+                    # Only respect barge-in if this is NOT a goodbye/end-call turn
+                    # (call_completed is unknown at this point, so check interruption here
+                    #  only when we haven't yet seen a call_completed hint in the response)
+                    if interruption_event.is_set():
+                        logger.info("[STREAM] Producer interrupted by user. Stopping.")
                         break
 
                     if not sentence:
@@ -288,7 +298,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 """Send all audio chunks to Tata immediately back-to-back."""
                 nonlocal total_audio_bytes
                 while True:
-                    if interruption_event.is_set():
+                    # Only flush & stop on barge-in if this is NOT a call_completed turn.
+                    # If call_completed, drain everything so agent's goodbye plays fully.
+                    is_completing = final_result and final_result.get("call_completed")
+                    if interruption_event.is_set() and not is_completing:
                         # Clear remaining queue items
                         while not audio_queue.empty():
                             try:
@@ -306,7 +319,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Await the TTS task
                     audio_chunk = await tts_task
                     
-                    if interruption_event.is_set():
+                    if interruption_event.is_set() and not is_completing:
                         # Second check after await
                         break
 
@@ -323,6 +336,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             logger.info(f"[STREAM] Playing Sentence #{s_id} ({len(audio_chunk)} bytes)")
                         except Exception as send_err:
                             logger.error(f"Failed to send audio chunk: {send_err}")
+
 
             # Run producer and consumer concurrently
             await asyncio.gather(_producer(), _consumer())
@@ -373,18 +387,27 @@ async def websocket_endpoint(websocket: WebSocket):
                         c.product_made     = str(final_result["product_made"])
                     if final_result.get("polymer_needed")  and not c.polymer_needed:
                         c.polymer_needed   = str(final_result["polymer_needed"])
-                    if final_result.get("grade_needed")    and not c.grade_needed:
-                        c.grade_needed     = str(final_result["grade_needed"])
+                    # GRADE: explicitly user-stated grade always overrides auto-resolved brand grade.
+                    # Do NOT use "if not c.grade_needed" here — that blocks user saying SG-5 after
+                    # brand resolver pre-filled K-67. Only skip if grade matches brand-resolver value.
+                    llm_grade = final_result.get("grade_needed")
+                    if llm_grade:
+                        c.grade_needed = str(llm_grade)
                     if final_result.get("brand_preferred") and not c.brand_preferred:
                         c.brand_preferred  = str(final_result["brand_preferred"])
                     if final_result.get("factory_location") and not c.factory_location:
                         c.factory_location = str(final_result["factory_location"])
+                    if final_result.get("quantity_needed") and not c.quantity_needed:
+                        c.quantity_needed = str(final_result["quantity_needed"])
 
-                    # Brand → Grade auto-resolution
+                    # Brand → Grade auto-resolution (FALLBACK ONLY)
+                    # Only fires when brand is known but user never explicitly stated a grade.
+                    # Once a grade is user-confirmed (set above), this will not overwrite it.
                     from app.services.brand_resolver import resolve_grade
                     if c.polymer_needed and c.brand_preferred and not c.grade_needed:
                         resolved = resolve_grade(db, c.polymer_needed, c.brand_preferred)
                         if resolved:
+                            logger.info(f"[BrandResolver] Auto-filling grade from brand: {resolved}")
                             c.grade_needed = resolved
 
                     # Role
@@ -486,7 +509,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         # Initial Greeting
                         if known_caller_name:
-                            greeting_text = f"Ji Namaste {known_caller_name} ji! Main Mohini hun, BSB Polymer se baat kar rahi hun. Batayein, main aapki kya help kar sakti hun?"
+                            greeting_text = f"Ji Namaste {known_caller_name} ji! Main Mohini hun, BSB Polymer se baat kar rahi hun. Bataye main kya help kar sakti hun?"
                         else:
                             greeting_text = "Ji Namaste! Main Mohini hun, BSB Polymer se baat kar rahi hun. Kya main aapka shubh naam jaan sakti hun?"
                         call_state = CallStatus.SPEAKING
@@ -499,12 +522,18 @@ async def websocket_endpoint(websocket: WebSocket):
                             }))
                         call_state = CallStatus.LISTENING
 
+                        # ── LLM Warm-Up ──────────────────────────────────────────
+                        # Fire a background Groq ping while the user listens to the
+                        # greeting. This warms the connection so the FIRST real
+                        # user query responds ~300-800ms faster.
+                        asyncio.create_task(warmup_llm())
+
                     elif event_type == "media":
                         payload = json_data.get("media", {}).get("payload")
                         if payload and call_state == CallStatus.SPEAKING:
                             # BARGE-IN CHECK: Is user talking while we are?
-                            # Cooldown: Ignore barge-in for first 400ms
-                            if asyncio.get_running_loop().time() - last_tts_start_time < 0.4:
+                            # Cooldown: Ignore barge-in for first 600ms (allow greeting to land)
+                            if asyncio.get_running_loop().time() - last_tts_start_time < 0.6:
                                 continue
 
                             chunk = base64.b64decode(payload)

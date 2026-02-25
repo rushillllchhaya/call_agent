@@ -74,7 +74,8 @@ async def handle_incoming_call(request: Request, db: Session = Depends(get_db)):
         try:
             # Initialize/Update User & Lead
             # Fixed: process_message signature accepts phone_number parameter
-            ai_response = orchestrator.process_message(
+            # process_message returns a tuple: (ai_response, should_end_call)
+            ai_response, _ = orchestrator.process_message(
                 user_id=user_id,
                 message_text="Hi",
                 phone_number=caller_id

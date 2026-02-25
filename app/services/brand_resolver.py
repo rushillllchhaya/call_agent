@@ -64,18 +64,54 @@ FALLBACK_BRAND_GRADE_MAP: dict[tuple[str, str], str] = {
 
 # Brand name aliases: what callers say → canonical search keyword
 BRAND_ALIASES: dict[str, str] = {
-    "ril":        "reliance",
-    "rpl":        "reliance",
+    "reliance":   "ril",
+    "ril":        "ril",
+    "rpl":        "ril",
+    "reliens":    "ril",
+    "relaince":   "ril",
     "hpcl":       "hpcl",
     "hp":         "hpcl",
     "gsl":        "gail",
     "ioc":        "iocl",
     "nrl":        "mrpl",
-    # Spelling corrections (common Indian caller patterns)
-    "reliens":    "reliance",
-    "relaince":   "reliance",
     "gayel":      "gail",
 }
+
+
+# ── Grade alias map: formatting variants only ─────────────────────────────────
+# Normalises how a caller writes a grade name → canonical DB name.
+# IMPORTANT: Do NOT map across different grades (SG-5 and K-67 are separate products).
+# Only map spacing/punctuation variants of the SAME grade.
+GRADE_ALIASES: dict[str, str] = {
+    # SG grades (IS standard naming)
+    "sg5":   "SG-5",
+    "sg 5":  "SG-5",
+    "sg3":   "SG-3",
+    "sg 3":  "SG-3",
+    "sg7":   "SG-7",
+    "sg 7":  "SG-7",
+    "sg8":   "SG-8",
+    "sg 8":  "SG-8",
+    # K grades (DIN/commercial naming)
+    "k67":   "K-67",
+    "k 67":  "K-67",
+    "k70":   "K-70",
+    "k 70":  "K-70",
+    "k60":   "K-60",
+    "k 60":  "K-60",
+    "k57":   "K-57",
+    "k 57":  "K-57",
+}
+
+
+def resolve_grade_alias(grade_raw: str) -> str:
+    """
+    Returns the canonical grade name for a user-provided grade string.
+    e.g. 'SG-5' → 'K-67', 'sg5' → 'K-67', 'K-67' → 'K-67'.
+    Returns the input unchanged if no alias is found.
+    """
+    key = grade_raw.lower().strip()
+    return GRADE_ALIASES.get(key, grade_raw)
 
 
 def _normalize(text: str) -> str:

@@ -23,6 +23,9 @@ app.mount("/static", StaticFiles(directory="app/static", html=True), name="stati
 
 @app.on_event("startup")
 async def startup_event():
+    import threading
+
+    # ── 1. Test Groq connection ───────────────────────────────────────────────
     from app.services.ai_agent import llm
     try:
         print("DEBUG: Testing Groq Connection...")
@@ -32,6 +35,25 @@ async def startup_event():
     except Exception as e:
         print(f"CRITICAL ERROR: Groq Connection Failed: {e}")
         # We don't exit here so the app still runs, but logs are clear.
+
+    # ── 2. Pre-warm embedding model in background thread ─────────────────────
+    # sentence-transformers downloads/loads the model (~80MB) the first time
+    # it is used. If this happens mid-WebSocket-handshake it blocks the async
+    # event loop and the connection appears as a plain HTTP GET in ngrok
+    # (the WebSocket upgrade times out before the model finishes loading).
+    # Loading it here — before any call comes in — prevents that entirely.
+    def _preload_embedder():
+        try:
+            from app.services.semantic_cache import _get_embedder, _get_faiss_index
+            _get_embedder()    # downloads + loads model (cached after first run)
+            _get_faiss_index() # initialises FAISS index
+            print("DEBUG: Embedding model pre-loaded — semantic cache ready.")
+        except Exception as e:
+            print(f"WARNING: Embedding model pre-load failed (non-fatal): {e}")
+
+    threading.Thread(target=_preload_embedder, daemon=True).start()
+    print("DEBUG: Embedding model pre-load started in background thread.")
+
 
 @app.get("/")
 def read_root():
