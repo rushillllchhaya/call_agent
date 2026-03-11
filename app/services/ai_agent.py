@@ -13,27 +13,30 @@ import logging
 
 # Setup logger
 logger = logging.getLogger("ai_agent")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Semaphore: at most 1 embedding thread at a time (prevents thread-pool starvation
 # when concurrent calls each try to run sentence-transformers on CPU)
 _EMBED_SEMAPHORE = asyncio.Semaphore(1)
 
 # ─── LLM Client ──────────────────────────────────────────────────────────────
+# llama-3.3-70b-versatile: 30,000 TPM (vs 6,000 for 8b-instant), supports JSON mode
+# and handles multilingual Hinglish/Gujarati much better than the 8B model.
 llm = ChatGroq(
     temperature=0.15,
     groq_api_key=settings.GROQ_API_KEY,
-    model_name="llama-3.1-8b-instant",  # Higher rate limits (TPM) than 70B
-    max_tokens=600,
-    model_kwargs={"response_format": {"type": "json_object"}}, # Force JSON output
+    model_name="llama-3.3-70b-versatile",
+    max_tokens=400,
+    model_kwargs={"response_format": {"type": "json_object"}},  # Force JSON output
 )
 
 # ─── LLM for summarisation (no JSON mode needed) ─────────────────────────────
+# gemma2-9b-it: 15,000 TPM, very fast for short summarisation tasks
 _summary_llm = ChatGroq(
     temperature=0,
     groq_api_key=settings.GROQ_API_KEY,
-    model_name="llama-3.1-8b-instant",
-    max_tokens=120,
+    model_name="gemma2-9b-it",
+    max_tokens=80,
 )
 
 
@@ -569,9 +572,11 @@ async def stream_ai_response_sentences(
     _fields = [
         ("Name",              c.name),
         ("Customer Type",     c.customer_type),
+        ("Intent",            "buy" if c.customer_type == "manufacturer" else ("sell" if c.customer_type == "trader" else None)),
         ("Product Made",      c.product_made),
         ("Polymer Needed",    c.polymer_needed),
-        ("Grade/Brand",       c.grade_needed or c.brand_preferred),
+        ("Grade Needed",      c.grade_needed),
+        ("Brand Preferred",   c.brand_preferred),
         ("Quantity Needed",   c.quantity_needed),
         ("Factory Location",  c.factory_location),
     ]
@@ -651,6 +656,24 @@ async def stream_ai_response_sentences(
         "catalog_context":    catalog_context,
         "history":            lc_history,
     }
+
+    # ── DEBUG: Log the exact context window being sent to the model ──────────
+    _hist_log_lines = []
+    _total_chars = 0
+    for _i, _msg in enumerate(lc_history):
+        _role = "USER" if isinstance(_msg, HumanMessage) else "ASSISTANT"
+        _content = _msg.content
+        _chars = len(_content)
+        _total_chars += _chars
+        _hist_log_lines.append(
+            f"  [{_i+1}] {_role} ({_chars} chars): {_content[:120]}{'...' if _chars > 120 else ''}"
+        )
+    logger.debug(
+        f"[CTX_WINDOW] Sending {len(lc_history)} msgs to model "
+        f"(~{_total_chars} chars / ~{_total_chars//4} tokens est). "
+        f"Strategy: {'verbatim' if history_len <= 8 else 'dynamic' if history_len <= 24 else 'summarised'}.\n"
+        + "\n".join(_hist_log_lines)
+    )
 
     full_raw = ""          # accumulates the entire LLM output
     in_ai_response = False  # True once we've entered the ai_response value string

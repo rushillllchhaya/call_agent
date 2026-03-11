@@ -1,0 +1,457 @@
+BSB BRAND LIST - Material, Brand Name, Code, Price & Location
+=====================================================================================================================================
+Generated from database | Total: 422 entries
+=====================================================================================================================================
+
+#     Material                  Brand Name                          Code                   Price        Location
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+  >>> HDPE <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+HDPE                      BIPC-Iran                           BG-HD62N07(UV)         N/A          Unknown
+HDPE                      BIPC-Iran                           HB0035                 N/A          Unknown
+HDPE                      Basell                              5831D                  N/A          Unknown
+HDPE                      Basell                              ACP5331H               N/A          Unknown
+HDPE                      Basell                              Hostalen CRP100        N/A          Unknown
+HDPE                      Basell                              Removed                N/A          Unknown
+HDPE                      Borealis                            3490LSH                N/A          Unknown
+HDPE                      Borealis                            HE3366                 N/A          Unknown
+HDPE                      Borouge                             HE1440 (Black)         N/A          Unknown
+HDPE                      Borouge                             HE3310 (Black)         N/A          Unknown
+HDPE                      Borouge                             HE3363                 N/A          Unknown
+HDPE                      Borouge                             HE3364                 N/A          Unknown
+HDPE                      Borouge                             HE3490LS               N/A          Unknown
+HDPE                      Borouge                             MB6501                 N/A          Unknown
+HDPE                      Borouge                             MB6501                 N/A          Unknown
+HDPE                      Borouge                             MB6561                 N/A          Unknown
+HDPE                      Borouge                             MB8502                 N/A          Unknown
+HDPE                      DAELIM-POLY                         5502                   N/A          Unknown
+HDPE                      DOW                                 2490-NT                N/A          Unknown
+HDPE                      DOW                                 DMDA-6400NT-7          N/A          Unknown
+HDPE                      DOW                                 KT10000UE              N/A          Unknown
+HDPE                      EQUATE                              EGDA-6888              N/A          Unknown
+HDPE                      EQUATE                              EMDA-6147              N/A          Unknown
+HDPE                      EQUATE                              EMDA-6200              N/A          Unknown
+HDPE                      EQUATE                              Q-TR144                N/A          Unknown
+HDPE                      EXXON                               HTA001HD5              N/A          Unknown
+HDPE                      EXXON                               HTA108                 N/A          Unknown
+HDPE                      Formosa                             8001                   N/A          Ahmedabad, Gujarat
+HDPE                      Formosa                             8001BL                 N/A          Ahmedabad, Gujarat
+HDPE                      GAIL                                150A180A               N/A          Unknown
+HDPE                      GAIL                                156A200U               N/A          Unknown
+HDPE                      GAIL                                B52A003A               N/A          Unknown
+HDPE                      GAIL                                B55HM0003              N/A          Unknown
+HDPE                      GAIL                                B56A003                N/A          Unknown
+HDPE                      GAIL                                B63A003N               N/A          Unknown
+HDPE                      GAIL                                E45A003A               N/A          Unknown
+HDPE                      GAIL                                E45A003B               N/A          Unknown
+HDPE                      GAIL                                E52A003NA              N/A          Unknown
+HDPE                      GAIL                                F55HM0003              N/A          Unknown
+HDPE                      GAIL                                I60A080A               N/A          Unknown
+HDPE                      GAIL                                P52A003                N/A          Unknown
+HDPE                      GAIL                                P54A001                N/A          Unknown
+HDPE                      GAIL                                W50A009A               N/A          Unknown
+HDPE                      GAIL                                Y50A010                N/A          Unknown
+HDPE                      GAIL                                Y50A010U               N/A          Unknown
+HDPE                      GC                                  HD8100MB               N/A          Unknown
+HDPE                      GSCALTEX                            5502BN                 N/A          Unknown
+HDPE                      HMEL                                B0053D                 N/A          Unknown
+HDPE                      HMEL                                B0148D                 N/A          Unknown
+HDPE                      HMEL                                B0155D                 N/A          Unknown
+HDPE                      HMEL                                F0050D                 N/A          Unknown
+HDPE                      HMEL                                F0146D                 N/A          Unknown
+HDPE                      HMEL                                F0153S                 N/A          Unknown
+HDPE                      HMEL                                M0252S                 N/A          Unknown
+HDPE                      HMEL                                M0861SU-NONUV          N/A          Unknown
+HDPE                      HMEL                                M2050S                 N/A          Unknown
+HDPE                      HMEL                                N0155D                 N/A          Unknown
+HDPE                      HMEL                                OGHDBD                 N/A          Unknown
+HDPE                      HMEL                                P0049D                 N/A          Unknown
+HDPE                      HMEL                                P0142S                 N/A          Unknown
+HDPE                      HMEL                                R0150S                 N/A          Unknown
+HDPE                      HPCL                                R50010                 N/A          Unknown
+HDPE                      Haldia                              B6401                  N/A          Unknown
+HDPE                      Haldia                              F5400                  N/A          Unknown
+HDPE                      Haldia                              HDT10S                 N/A          Unknown
+HDPE                      Haldia                              M5002L                 N/A          Unknown
+HDPE                      Haldia                              M5005L                 N/A          Unknown
+HDPE                      Haldia                              M5018L                 N/A          Unknown
+HDPE                      Haldia                              M6007L                 N/A          Unknown
+HDPE                      Haldia                              P5200                  N/A          Unknown
+HDPE                      Haldia                              T9                     N/A          Unknown
+HDPE                      INNOPLUS                            HD8100M                N/A          Unknown
+HDPE                      IOCL                                002DF50                N/A          Unknown
+HDPE                      IOCL                                002DP48                N/A          Unknown
+HDPE                      IOCL                                003DB52                N/A          Unknown
+HDPE                      IOCL                                004DP44                N/A          Unknown
+HDPE                      IOCL                                010DB50                N/A          Unknown
+HDPE                      IOCL                                010DP45                N/A          Unknown
+HDPE                      IOCL                                012DB54                N/A          Unknown
+HDPE                      IOCL                                080M60                 N/A          Unknown
+HDPE                      JPC-IRAN                            52518                  N/A          Unknown
+HDPE                      LOTTE                               FU5100                 N/A          Unknown
+HDPE                      LOTTE                               M7100 (Pressure)       N/A          Unknown
+HDPE                      Lotrene                             Q-5502BN               N/A          Unknown
+HDPE                      Lotrene                             Q-TR571                N/A          Unknown
+HDPE                      Lotrene                             Q50100                 N/A          Unknown
+HDPE                      Luban                               DGDX-6097              N/A          Unknown
+HDPE                      Luban                               DGDZ-6095              N/A          Unknown
+HDPE                      Luban                               DGDZ-6097              N/A          Unknown
+HDPE                      Luban                               DMDZ-6147              N/A          Unknown
+HDPE                      Marlex                              5502BN                 N/A          Unknown
+HDPE                      Marlex                              HXM50100P              N/A          Unknown
+HDPE                      Marlex                              TR144                  N/A          Unknown
+HDPE                      OPAL                                B5004                  N/A          Unknown
+HDPE                      OPAL                                B55H02                 N/A          Unknown
+HDPE                      OPAL                                B55H03                 N/A          Unknown
+HDPE                      OPAL                                F52H04                 N/A          Unknown
+HDPE                      OPAL                                P50H03                 N/A          Unknown
+HDPE                      OPAL                                R5410                  N/A          Unknown
+HDPE                      Petronas                            AMT9255F               N/A          Unknown
+HDPE                      Qamar                               F1                     N/A          Unknown
+HDPE                      RIL                                 45GP004                N/A          Unknown
+HDPE                      RIL                                 46GP009                N/A          Unknown
+HDPE                      RIL                                 52GB002                N/A          Unknown
+HDPE                      RIL                                 52GB003                N/A          Unknown
+HDPE                      RIL                                 B5502                  N/A          Unknown
+HDPE                      RIL                                 B56003                 Rs. 5.00     Unknown
+HDPE                      RIL                                 E52009                 N/A          Unknown
+HDPE                      RIL                                 EE20                   N/A          Unknown
+HDPE                      RIL                                 F46003                 N/A          Unknown
+HDPE                      RIL                                 HD50MA180              N/A          Unknown
+HDPE                      RIL                                 M60075                 N/A          Unknown
+HDPE                      SCG                                 H1000PC                N/A          Unknown
+HDPE                      SCG                                 S199F                  N/A          Unknown
+HDPE                      Sabic                               FJ00952                N/A          Unknown
+HDPE                      Sabic                               P4808N                 N/A          Unknown
+HDPE                      Sabic                               P4808NA                N/A          Unknown
+HDPE                      Sabic                               P5616N                 N/A          Unknown
+HDPE                      Sabic                               P6006                  N/A          Unknown
+HDPE                      Sabic                               P6006AD (Pressure)     N/A          Unknown
+HDPE                      Sabic                               P6006NA                N/A          Unknown
+HDPE                      Sasol                               HFI5110                N/A          Unknown
+HDPE                      Tasnee                              100 Black              N/A          Unknown
+HDPE                      Titan                               HF0961                 N/A          Unknown
+HDPE                      Titan                               HF1881                 N/A          Unknown
+HDPE                      Titan                               HM5000                 N/A          Unknown
+
+  >>> LDPE <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+LDPE                      BIPC-Iran                           242000                 N/A          Unknown
+LDPE                      BIPC-Iran                           LF0200                 N/A          Unknown
+LDPE                      BIPC-Iran                           LH0075                 N/A          Unknown
+LDPE                      Basell                              2221D                  N/A          Unknown
+LDPE                      Basell                              2221F                  N/A          Unknown
+LDPE                      Basell                              2421H                  N/A          Unknown
+LDPE                      Basell                              2421K                  N/A          Unknown
+LDPE                      Basell                              2427F                  N/A          Unknown
+LDPE                      Basell                              2427H                  N/A          Unknown
+LDPE                      Basell                              2427K                  N/A          Unknown
+LDPE                      Basell                              NA204000               N/A          Unknown
+LDPE                      Basell                              NA214000               N/A          Unknown
+LDPE                      Borouge                             FT4119                 N/A          Unknown
+LDPE                      Borouge                             FT5230                 N/A          Unknown
+LDPE                      Borouge                             FT6230                 N/A          Unknown
+LDPE                      Borouge                             FT6236                 N/A          Unknown
+LDPE                      Borouge                             LE4115                 N/A          Unknown
+LDPE                      DOW                                 150E                   N/A          Unknown
+LDPE                      DOW                                 EC7000                 N/A          Unknown
+LDPE                      EXXON                               100BW                  N/A          Unknown
+LDPE                      EXXON                               160AT                  N/A          Unknown
+LDPE                      EXXON                               165BW1                 N/A          Unknown
+LDPE                      GC                                  LD2420D                N/A          Unknown
+LDPE                      GC                                  LD2426K                N/A          Unknown
+LDPE                      Hanwha                              955                    N/A          Solan, Himachal Pradesh
+LDPE                      LG                                  BB120                  N/A          Unknown
+LDPE                      LG                                  LB7000                 N/A          Unknown
+LDPE                      LOTTE                               801YY                  N/A          Unknown
+LDPE                      Lotrene                             FB3003                 N/A          Unknown
+LDPE                      Lotrene                             FB5026                 N/A          Unknown
+LDPE                      Lotrene                             FD0270                 N/A          Unknown
+LDPE                      Lotrene                             FD0474                 N/A          Unknown
+LDPE                      Lotrene                             FE3000                 N/A          Unknown
+LDPE                      RIL                                 1070LA17               N/A          Unknown
+LDPE                      RIL                                 16MA400                N/A          Unknown
+LDPE                      RIL                                 22FA002                N/A          Unknown
+LDPE                      RIL                                 24FA040                N/A          Unknown
+LDPE                      RIL                                 24FS040                N/A          Unknown
+LDPE                      RIL                                 J1005FY20              N/A          Unknown
+LDPE                      RIL                                 J1020FA20              N/A          Unknown
+LDPE                      RIL                                 J22FA002               N/A          Unknown
+LDPE                      RIL                                 J22FA002E              N/A          Unknown
+LDPE                      RIL                                 J24FS040               N/A          Unknown
+LDPE                      RIL                                 UTNC-1070LA17          N/A          Unknown
+LDPE                      Sabic                               7019EC                 N/A          Unknown
+LDPE                      Sabic                               GX20                   N/A          Unknown
+LDPE                      Sabic                               HP0321NN               N/A          Unknown
+LDPE                      Sabic                               HP0322N                N/A          Unknown
+LDPE                      Sabic                               HP0322N-N              N/A          Unknown
+LDPE                      Sabic                               HP0722NN               N/A          Unknown
+LDPE                      Sabic                               HP0723JN               N/A          Unknown
+LDPE                      Sabic                               HP0724NN               N/A          Unknown
+LDPE                      Sabic                               HP2022JN               N/A          Unknown
+LDPE                      Sabic                               HP2022N                N/A          Unknown
+LDPE                      Sabic                               HP2023JN               N/A          Unknown
+LDPE                      Sabic                               HP2025JN               N/A          Unknown
+LDPE                      Sabic                               HP2025NN               N/A          Unknown
+LDPE                      Sabic                               HP4023WN               N/A          Unknown
+LDPE                      Sabic                               HP4024WN               N/A          Unknown
+LDPE                      Sabic                               HP4025ZN               N/A          Unknown
+LDPE                      Sabic                               HP4027                 N/A          Unknown
+LDPE                      Sasol                               LEC-1969               N/A          Unknown
+LDPE                      Sasol                               LF12130                N/A          Unknown
+LDPE                      Sasol                               LF2119                 N/A          Unknown
+LDPE                      Tasnee                              0725N                  N/A          Unknown
+LDPE                      Tasnee                              4025AS                 N/A          Unknown
+LDPE                      Tasnee                              4025N                  N/A          Unknown
+
+  >>> LLDPE <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+LLDPE                     BCPL                                F20A010IA              N/A          Unknown
+LLDPE                     BCPL                                F20S010IA              N/A          Unknown
+LLDPE                     BCPL                                F22S025IA              N/A          Unknown
+LLDPE                     Borouge                             FB2230                 N/A          Unknown
+LLDPE                     Borouge                             LE1711                 N/A          Unknown
+LLDPE                     Borouge                             LE2270                 N/A          Unknown
+LLDPE                     DOW                                 2606G                  N/A          Unknown
+LLDPE                     DOW                                 2645G                  N/A          Unknown
+LLDPE                     DOW                                 5220G                  N/A          Unknown
+LLDPE                     EQUATE                              7087                   N/A          Unknown
+LLDPE                     EXXON                               6201XR                 N/A          Unknown
+LLDPE                     EXXON                               Exceed 1018MK          N/A          Unknown
+LLDPE                     EXXON                               LL1001 AV              N/A          Unknown
+LLDPE                     EXXON                               XP8784MK               N/A          Unknown
+LLDPE                     Evalene                             LF10181                N/A          Unknown
+LLDPE                     Formosa                             3490                   N/A          Ahmedabad, Gujarat
+LLDPE                     GAIL                                126A500                N/A          Unknown
+LLDPE                     GAIL                                D22S010A               N/A          Unknown
+LLDPE                     GAIL                                E36A060                N/A          Unknown
+LLDPE                     GAIL                                F18A010UA              N/A          Unknown
+LLDPE                     GAIL                                F18A020UA              N/A          Unknown
+LLDPE                     GAIL                                F18S010U               N/A          Unknown
+LLDPE                     GAIL                                F18S020U               N/A          Unknown
+LLDPE                     GAIL                                F20S009A               N/A          Unknown
+LLDPE                     GAIL                                I26A500UA              N/A          Unknown
+LLDPE                     GAIL                                R36A050UA              N/A          Unknown
+LLDPE                     HMEL                                D0120L                 N/A          Unknown
+LLDPE                     HMEL                                E0725L                 N/A          Unknown
+LLDPE                     HMEL                                F0118L                 N/A          Unknown
+LLDPE                     HMEL                                F0120L                 N/A          Unknown
+LLDPE                     HMEL                                F0218L                 N/A          Unknown
+LLDPE                     HMEL                                M2024L                 N/A          Unknown
+LLDPE                     HMEL                                M5026L                 N/A          Unknown
+LLDPE                     HMEL                                N0120L                 N/A          Unknown
+LLDPE                     HMEL                                OGLLMS                 N/A          Unknown
+LLDPE                     HMEL                                OGLLRS                 N/A          Unknown
+LLDPE                     HPCL                                F01019S                N/A          Unknown
+LLDPE                     HPCL                                F02020                 N/A          Unknown
+LLDPE                     Haldia                              71501S                 N/A          Unknown
+LLDPE                     IOCL                                010F18S                N/A          Unknown
+LLDPE                     IOCL                                010L22S                N/A          Unknown
+LLDPE                     IOCL                                020F18A                N/A          Unknown
+LLDPE                     IOCL                                042R35A                N/A          Unknown
+LLDPE                     IOCL                                500M24A                N/A          Unknown
+LLDPE                     Lotrene                             Q1018H                 N/A          Unknown
+LLDPE                     Lotrene                             Q2018C                 N/A          Unknown
+LLDPE                     Lotrene                             Q2018N                 N/A          Unknown
+LLDPE                     Luban                               DFDA-7042              N/A          Unknown
+LLDPE                     Luban                               DFDA-7047              N/A          Unknown
+LLDPE                     Luban                               DFDA-7059              N/A          Unknown
+LLDPE                     Luban                               DFDC-7080              N/A          Unknown
+LLDPE                     OPAL                                E2507                  N/A          Unknown
+LLDPE                     OPAL                                F2001A                 N/A          Unknown
+LLDPE                     OPAL                                F2001S                 N/A          Unknown
+LLDPE                     OPAL                                F2002A                 N/A          Unknown
+LLDPE                     OPAL                                M2550                  N/A          Unknown
+LLDPE                     OPAL                                T3804                  N/A          Unknown
+LLDPE                     Qamar                               FC21HS                 N/A          Unknown
+LLDPE                     RIL                                 E19010                 N/A          Unknown
+LLDPE                     RIL                                 E24065                 N/A          Unknown
+LLDPE                     RIL                                 F18010                 N/A          Unknown
+LLDPE                     RIL                                 F19010                 N/A          Unknown
+LLDPE                     RIL                                 JD19010                N/A          Unknown
+LLDPE                     RIL                                 JD22010                N/A          Unknown
+LLDPE                     RIL                                 JF18010                N/A          Unknown
+LLDPE                     RIL                                 JF18020                N/A          Unknown
+LLDPE                     RIL                                 JF19010                N/A          Unknown
+LLDPE                     RIL                                 JF19020                N/A          Unknown
+LLDPE                     RIL                                 M26500                 N/A          Unknown
+LLDPE                     Sabic                               118N                   N/A          Unknown
+LLDPE                     Sabic                               118NM                  N/A          Unknown
+LLDPE                     Sabic                               118WJ                  N/A          Unknown
+LLDPE                     Sabic                               218 NJ                 N/A          Unknown
+LLDPE                     Sabic                               M500026                N/A          Unknown
+
+  >>> PET <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+PET                       Billion                             31W56/W                Rs. 80.00    Unknown
+PET                       Billion                             31W62C                 N/A          Unknown
+PET                       Jade                                CZ302                  N/A          Unknown
+PET                       Jade                                CZ318                  N/A          Unknown
+PET                       Octal                               OCTAL GP 01            N/A          Unknown
+PET                       Wankai                              Wk-801                 Rs. 78.00    Unknown
+PET                       Wankai                              Wk-821                 N/A          Unknown
+PET                       Wankai                              Wk-881                 N/A          Unknown
+PET                       Wankai                              Wk-901                 N/A          Unknown
+
+  >>> PP <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+PP                        Advanced                            1101S                  N/A          Unknown
+PP                        Advanced                            1101SC                 N/A          Unknown
+PP                        Advanced                            1102K                  N/A          Unknown
+PP                        BCPL                                FH110NA                N/A          Unknown
+PP                        BCPL                                IH120NA                N/A          Unknown
+PP                        BCPL                                WH034NA                N/A          Unknown
+PP                        Basell                              EP332L                 N/A          Unknown
+PP                        Basell                              Grade-1 Non Prime      N/A          Unknown
+PP                        Basell                              HP456J                 N/A          Unknown
+PP                        Basell                              HP462S                 N/A          Unknown
+PP                        Basell                              HP552R                 N/A          Unknown
+PP                        Borealis                            PPCP BE961MO           N/A          Unknown
+PP                        Borouge                             HC205TF                N/A          Unknown
+PP                        Borouge                             HD168MO                N/A          Unknown
+PP                        Borouge                             HE125MO                N/A          Unknown
+PP                        Borouge                             HJ333MO                N/A          Unknown
+PP                        Borouge                             HOE333                 N/A          Unknown
+PP                        Borouge                             RA150E                 N/A          Unknown
+PP                        Borouge                             RE420MO                N/A          Unknown
+PP                        Borouge                             RE425MO                N/A          Unknown
+PP                        Borouge                             RG568MO                N/A          Unknown
+PP                        Borouge                             RJ768MO                N/A          Unknown
+PP                        CNOOC                               1102K                  N/A          Unknown
+PP                        EXXON                               5032E5                 Rs. 55.00    Unknown
+PP                        EXXON                               PP3155                 N/A          Unknown
+PP                        EXXON                               PP3155E5               N/A          Unknown
+PP                        EXXON Vistamaxx                     3980FL                 N/A          Unknown
+PP                        EXXON Vistamaxx                     6102                   N/A          Unknown
+PP                        EXXON Vistamaxx                     6202                   N/A          Unknown
+PP                        FUJIAN                              T30S                   N/A          Unknown
+PP                        HMEL                                CE02RR                 N/A          Unknown
+PP                        HMEL                                CM03RR                 N/A          Unknown
+PP                        HMEL                                CM08NR                 N/A          Unknown
+PP                        HMEL                                CM12RR                 N/A          Unknown
+PP                        HMEL                                F10SR                  N/A          Unknown
+PP                        HMEL                                F10SR1                 N/A          Unknown
+PP                        HMEL                                M12RR                  N/A          Unknown
+PP                        HMEL                                M12RR1                 N/A          Unknown
+PP                        HMEL                                NM08NR                 N/A          Unknown
+PP                        HMEL                                NM12RR                 N/A          Unknown
+PP                        HMEL                                R03RR                  N/A          Unknown
+PP                        HMEL                                R03RR1                 N/A          Unknown
+PP                        HMEL                                RM12CR                 N/A          Unknown
+PP                        HMEL                                RM30CR                 N/A          Unknown
+PP                        HMEL                                Y35GR                  N/A          Unknown
+PP                        HPCL                                HM120A                 N/A          Unknown
+PP                        HPCL                                HR033                  N/A          Unknown
+PP                        IOCL                                1030RG                 N/A          Unknown
+PP                        IOCL                                1110MG                 N/A          Unknown
+PP                        IOCL                                1200MG                 N/A          Unknown
+PP                        IOCL                                1350EG                 N/A          Unknown
+PP                        IOCL                                1350YG                 N/A          Unknown
+PP                        IOCL                                4080MA                 N/A          Unknown
+PP                        IOCL                                P1110MG                N/A          Unknown
+PP                        Luban                               EP2348R                N/A          Unknown
+PP                        Luban                               HP1106K                N/A          Unknown
+PP                        Luban                               HP2100N                N/A          Unknown
+PP                        MRPL                                HF010                  N/A          Unknown
+PP                        MRPL                                HM012T                 N/A          Unknown
+PP                        MRPL                                HR003                  N/A          Unknown
+PP                        MRPL                                HT003T                 N/A          Unknown
+PP                        MRPL                                HY035R                 N/A          Unknown
+PP                        Marlex                              HGX030SP               N/A          Unknown
+PP                        Nayara                              H120IG                 N/A          Unknown
+PP                        OPAL                                FH10S                  N/A          Unknown
+PP                        OPAL                                MH13                   N/A          Unknown
+PP                        OPAL                                MH13A                  N/A          Unknown
+PP                        OPAL                                RH03                   N/A          Unknown
+PP                        OPAL                                RH38                   N/A          Unknown
+PP                        Petrochina                          T30S                   N/A          Unknown
+PP                        Polimaxx                            1100ZC                 N/A          Unknown
+PP                        Polimaxx                            3255M                  N/A          Unknown
+PP                        RIL                                 AM120N                 N/A          Unknown
+PP                        RIL                                 AM650N                 N/A          Unknown
+PP                        RIL                                 B120MA                 N/A          Unknown
+PP                        RIL                                 C080MA                 N/A          Unknown
+PP                        RIL                                 H030SG                 N/A          Unknown
+PP                        RIL                                 H033MG                 N/A          Unknown
+PP                        RIL                                 H050MN                 N/A          Unknown
+PP                        RIL                                 H060MG                 N/A          Unknown
+PP                        RIL                                 H100EY                 N/A          Unknown
+PP                        RIL                                 H110MA                 N/A          Unknown
+PP                        RIL                                 H110MG                 N/A          Unknown
+PP                        RIL                                 H200FG                 N/A          Unknown
+PP                        RIL                                 H350FG                 N/A          Unknown
+PP                        RIL                                 MI3530                 N/A          Unknown
+PP                        RIL                                 REPOL H350EC           N/A          Unknown
+PP                        RIL                                 SR20NC                 N/A          Unknown
+PP                        RIL                                 SRM100NC               N/A          Unknown
+PP                        RIL                                 UHF                    N/A          Unknown
+PP                        SINOPEC                             T03                    N/A          Unknown
+PP                        Sabic                               5706P                  N/A          Unknown
+
+  >>> PVC <<<
+-------------------------------------------------------------------------------------------------------------------------------------
+
+PVC                       Asahimas                            FJ57                   N/A          Unknown
+PVC                       Asnyl                               FJ65R                  N/A          Unknown
+PVC                       Beiyuan                             SG5                    N/A          Bhiwandi, Maharashtra
+PVC                       CGPC (LD Bag)                       H66                    N/A          Unknown
+PVC                       CGPC (Paper Bag)                    H66                    N/A          Unknown
+PVC                       Chemoplast                          CH-124                 N/A          Unknown
+PVC                       DCM-Shriram                         SR10A                  N/A          Unknown
+PVC                       Dongxing                            SG5                    N/A          Bhiwandi, Maharashtra
+PVC                       Easthope                            SG5                    N/A          Bhiwandi, Maharashtra
+PVC                       Erdos                               SG5                    N/A          Bhiwandi, Maharashtra
+PVC                       Formosa                             B57                    Rs. 46.05    Ahmedabad, Gujarat
+PVC                       Formosa                             S57                    N/A          Ahmedabad, Gujarat
+PVC                       Formosa                             S60                    N/A          Ahmedabad, Gujarat
+PVC                       Formosa                             S65                    Rs. 25.50    Ahmedabad, Gujarat
+PVC                       Formosa                             S65D                   Rs. 63.00    Ahmedabad, Gujarat
+PVC                       Formosa                             S70                    N/A          Ahmedabad, Gujarat
+PVC                       Hanwha                              P1000                  Rs. 57.00    Solan, Himachal Pradesh
+PVC                       Hanwha                              P1000F                 N/A          Solan, Himachal Pradesh
+PVC                       Hanwha                              P1000SB                N/A          Solan, Himachal Pradesh
+PVC                       Hanwha                              P700                   Rs. 65.00    Solan, Himachal Pradesh
+PVC                       Huayi                               S-1000                 N/A          Unknown
+PVC                       Hygain                              HS1000R                Rs. 10.00    Solan, Himachal Pradesh
+PVC                       Inovyn                              267RC                  N/A          Unknown
+PVC                       Inovyn                              S6745                  N/A          Unknown
+PVC                       Jiahua                              JH1000                 Rs. 99.00    Unknown
+PVC                       Jilantai                            SG5                    Rs. 61.96    Bhiwandi, Maharashtra
+PVC                       Julong                              JL1000L                Rs. 60.00    Unknown
+PVC                       Junzeng                             SG5                    Rs. 60.00    Bhiwandi, Maharashtra
+PVC                       Kaneka                              S1000t                 N/A          Unknown
+PVC                       Kaneka                              S1007                  N/A          Unknown
+PVC                       LG                                  LS100H                 Rs. 53.00    Mundra, Gujarat
+PVC                       LG                                  TL1000                 Rs. 50.00    Mundra, Gujarat
+PVC                       LG                                  TL700                  Rs. 25.00    Mundra, Gujarat
+PVC                       Mexichem                            P225                   N/A          Unknown
+PVC                       OPC                                 S-107                  N/A          Unknown
+PVC                       OPC                                 S101                   N/A          Unknown
+PVC                       Oxyvinyl                            225P                   N/A          Unknown
+PVC                       RIL                                 67BER01                Rs. 25.00    Unknown
+PVC                       RIL                                 K-6701                 N/A          Unknown
+PVC                       SCGC                                SP660                  N/A          Unknown
+PVC                       Sabic                               K67S                   N/A          Unknown
+PVC                       Shin Dai-Ichi Vinyl Corp.           1300SI                 Rs. 56.00    Unknown
+PVC                       Shinetsu                            TK 700                 N/A          Unknown
+PVC                       Shinetsu                            TK1000                 N/A          Unknown
+PVC                       TPC                                 SG660                  Rs. 88.70    Unknown
+PVC                       Taiyo                               TH 700                 N/A          Unknown
+PVC                       Tianjin Dagu                        DG1000K                N/A          Unknown
+PVC                       Tianjin Dagu                        DG1000S                N/A          Unknown
+PVC                       Tianjin Dagu                        DG700                  N/A          Unknown
+PVC                       Wanhua                              WH1000F                N/A          Unknown
+PVC                       Westlake                            1230P                  N/A          Unknown
+PVC                       Xinfa (LD)                          SG5                    N/A          Bhiwandi, Maharashtra and Mundra, Gujarat
+PVC                       Xinfa (Paper)                       SG5                    Rs. 62.50    Bhiwandi, Maharashtra and Mundra, Gujarat
+PVC                       Zhongtai                            SG5                    N/A          Bhiwandi, Maharashtra and Mundra, Gujarat
+
+=====================================================================
+Total entries: 422

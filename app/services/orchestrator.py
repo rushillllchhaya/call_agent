@@ -11,6 +11,7 @@ import datetime
 import os
 from app.services.router import IntentRouter
 from app.services.pricing import PricingEngine
+from app.services.bsb_api_client import CallAgentService
 
 # ── Stage order for advancement ──────────────────────────────────────────────
 _STAGE_ORDER = [
@@ -245,26 +246,40 @@ class Orchestrator:
             elif state.stage == ConversationStage.PITCH:
                 state.stage = ConversationStage.QUALIFICATION
 
-        # 3.2. Proactive Pricing Context
+        # 3.2. Proactive Pricing Context — uses JSON cache (prices_cache.json)
         price_context = ""
         if intent == "ASK_PRICE" or "price" in english_text.lower() or "rate" in english_text.lower():
-            # If we have basic info, calculate a real quote
-            if state.customer.polymer_needed and state.customer.grade_needed:
-                poly = state.customer.polymer_needed
-                grad = state.customer.grade_needed
-                # Use defaults for missing info to get an estimate
-                qty  = 25.0 # default 25 MT for estimation
-                loc  = state.customer.factory_location or "Ahmedabad" 
-                
-                quote = self.pricing_engine.calculate_price(poly, grad, qty, loc)
-                if quote.get("found"):
-                    price_context = (
-                        f"\nPRICING DATA: The current calculated price for {grad} {poly} "
-                        f"is approximately ₹{quote['final_price']}/kg (Dispatch Price). "
-                        f"Breakdown: Base ₹{quote['base_price']}, Freight ₹{quote['freight']}, Tax ₹{quote['tax']}."
+            brand = state.customer.brand_preferred
+            grade = state.customer.grade_needed
+            # Need at least brand or grade to look up price
+            if brand or grade:
+                try:
+                    svc   = CallAgentService(self.db)
+                    quote = svc.get_price(
+                        brand=brand or "",
+                        grade=grade or "",
                     )
-                else:
-                    price_context = "\nPRICING DATA: Live price not found in database. Tell customer we will check with RM."
+                    if quote.get("found"):
+                        price_context = (
+                            f"\nPRICING DATA: Live price for {quote['brand']} {quote['grade']} "
+                            f"is ₹{quote['price_per_mt']:,}/MT (₹{quote['price_per_mt']//1000}/kg). "
+                            f"Category: {quote['category']}. Availability: {quote['availability']}. "
+                            f"Estimated delivery: {quote['delivery_days']} days. "
+                            f"This is the dispatch price — landed price with freight will be confirmed by RM."
+                        )
+                    else:
+                        price_context = (
+                            f"\nPRICING DATA: Price not found for {brand or grade}. "
+                            f"Reason: {quote.get('reason', 'unknown')}. "
+                            "Tell customer: 'Exact rate aapke location ke liye RM check karke batayenge — pehle app download kar lete hain.'"
+                        )
+                except Exception as _pe:
+                    print(f"[Orchestrator] Price lookup error: {_pe}")
+            else:
+                price_context = (
+                    "\nPRICING DATA: Brand/Grade not yet collected from customer. "
+                    "Ask for the grade/brand before quoting a price."
+                )
 
         # 4. Advance GREETING automatically (greeting was played by streams.py)
         if state.stage == ConversationStage.GREETING:

@@ -85,7 +85,7 @@ async def websocket_endpoint(websocket: WebSocket):
     
     # VAD Parameters
     # Dynamic VAD: Load from env or fallback to 500
-    SILENCE_THRESHOLD_MS = int(os.getenv("CALL_SILENCE_MS", 500))
+    SILENCE_THRESHOLD_MS = int(os.getenv("CALL_SILENCE_MS", 700))
     VOICE_THRESHOLD = int(os.getenv("VOICE_THRESHOLD", 150))
     MAX_BUFFER_SIZE = 1024 * 500 # 500KB Safety limit
     
@@ -414,6 +414,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     if c.customer_type and not state_fresh.role:
                         state_fresh.role = "buyer" if c.customer_type == "manufacturer" else "seller"
 
+                    # Auto-infer intent from customer_type so it's never stuck at null
+                    current_intent = final_result.get("intent")
+                    if current_intent:
+                        state_fresh.role = current_intent  # store intent via role mapping too
+                    elif c.customer_type == "manufacturer":
+                        final_result["intent"] = "buy"
+                    elif c.customer_type == "trader":
+                        final_result["intent"] = "sell"
+
                     state_fresh.customer = c
 
                     # Lead upsert
@@ -520,6 +529,9 @@ async def websocket_endpoint(websocket: WebSocket):
                             await websocket.send_text(json.dumps({
                                 "event": "media", "streamSid": stream_sid, "media": {"payload": greeting_b64}
                             }))
+                            logger.info(f"[GREETING] Sent greeting audio to Tata ({len(greeting_audio)} bytes mu-law). Text: '{greeting_text}'")
+                        else:
+                            logger.error("[GREETING] TTS returned empty audio for greeting! User will hear silence.")
                         call_state = CallStatus.LISTENING
 
                         # ── LLM Warm-Up ──────────────────────────────────────────

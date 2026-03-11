@@ -12,12 +12,14 @@ app = FastAPI(title=settings.PROJECT_NAME)
 from app.api.endpoints import router as api_router
 from app.api.webhooks import router as webhook_router
 from app.api.streams import router as streams_router
+from app.api.call_agent import router as call_agent_router
 
 from fastapi.staticfiles import StaticFiles
 
-app.include_router(api_router, prefix="/api/v1")
-app.include_router(webhook_router, prefix="/webhook")
-app.include_router(streams_router, prefix="/ws")
+app.include_router(api_router,       prefix="/api/v1")
+app.include_router(webhook_router,   prefix="/webhook")
+app.include_router(streams_router,   prefix="/ws")
+app.include_router(call_agent_router, prefix="/api/call")
 
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
 

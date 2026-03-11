@@ -60,8 +60,8 @@ class ConversationState(BaseModel):
     def add_turn(self, user_text: str, ai_text: str):
         self.history.append({"role": "user",      "content": user_text})
         self.history.append({"role": "assistant",  "content": ai_text})
-        if len(self.history) > 40:
-            self.history = self.history[-40:]
+        if len(self.history) > 20:
+            self.history = self.history[-20:]
 
     def update_missing_fields(self):
         """Legacy helper — used by pricing flow if user transitions to ordering."""

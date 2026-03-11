@@ -153,17 +153,35 @@ class Order(Base):
 
 class Lead(Base):
     __tablename__ = "leads"
-    id = Column(Integer, primary_key=True, index=True)
-    customer_name = Column(String, nullable=True)
-    mobile_no = Column(String, nullable=True) # captured from creation
-    intent = Column(String, nullable=True) # Buy / Sell
-    polymer_type = Column(String, nullable=True) # e.g. PP, PVC
-    grade = Column(String, nullable=True) # e.g. 123
-    quantity = Column(String, nullable=True) # kept as string to capture "10 tons" initially, or parse to Float
-    location = Column(String, nullable=True)
-    status = Column(String, default="New") # New, Qualified, Converted
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    id           = Column(Integer, primary_key=True, index=True)
+    customer_name = Column(String, nullable=True)   # caller's name
+    mobile_no    = Column(String, nullable=True)    # caller's phone number
+    intent       = Column(String, nullable=True)    # Buy / Sell
+    polymer_type = Column(String, nullable=True)    # e.g. PP, PVC
+    grade        = Column(String, nullable=True)    # e.g. H030 SG
+    quantity     = Column(String, nullable=True)
+    location     = Column(String, nullable=True)
+    status       = Column(String, default="New")    # New | Qualified | Converted
+    timestamp    = Column(DateTime(timezone=True), server_default=func.now())
+    created_at   = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class GradeCode(Base):
+    """
+    Maps to the 'codes' table in the BSB production DB.
+    Each row = one grade code (e.g. 'S60') belonging to a brand and polymer category.
+    Columns: id, name (grade code string), grade_id (→ grades/polymer), brand_id (→ brands)
+    """
+    __tablename__ = "codes"
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String, nullable=False)   # e.g. "S60", "TK1000"
+    grade_id   = Column(String, nullable=False)   # FK → grades.id (polymer category)
+    brand_id   = Column(String, nullable=False)   # FK → brands.id
+    mfi_value  = Column(String, nullable=True)
+    status     = Column(String, default='1')      # '1' = Active
+    order_no   = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class PricingRule(Base):
     __tablename__ = "pricing_rules"

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "7e138f90-66e8-4525-b8aa-a211b20b8e99",
+    "name": "Alice",
+    "phone": "5551234567",
+    "company_name": "BSB Fortrade",
+    "location": "Ahmedabad",
+    "material": "Asahimas B57",
+    "quantity": "25 MT",
+    "quoted_price": null,
+    "status": "New",
+    "call_date": "2026-03-03T10:00:13.429380",
+    "source": "temp_json",
+    "note": "Pending DB verification"
+  },
+  {
+    "id": "dcbc3d6e-5912-4c40-aa3a-61571a4c050a",
+    "name": "{{name}}",
+    "phone": "{{phone}}",
+    "company_name": "{{company_name}}",
+    "location": "{{location}}",
+    "material": "{{material}}",
+    "quantity": "50",
+    "quoted_price": 5800000.0,
+    "status": "New",
+    "call_date": "2026-03-05T09:15:53.934890",
+    "source": "temp_json",
+    "note": "Pending DB verification"
+  },
+  {
+    "id": "f731f33c-cdfa-49d0-b49e-032e2fde1fb8",
+    "name": "Rushil",
+    "phone": "6353675876",
+    "company_name": "Nayara",
+    "location": "Jamnagar",
+    "material": "PVC Hygain HS1000R",
+    "quantity": "50",
+    "quoted_price": 5000000.0,
+    "status": "New",
+    "call_date": "2026-03-05T09:17:06.112246",
+    "source": "temp_json",
+    "note": "Pending DB verification"
+  }
+]
