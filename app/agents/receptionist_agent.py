@@ -78,8 +78,9 @@ Keep in English: material, price, company, mobile number, HDPE, LDPE, PP, PVC, P
 - Unclear audio: "Sorry sir, aapki awaaz clear nahi aa rahi. Can you repeat?"
 - 3 failed attempts: "Main aapko humari team se callback karwati hoon." → ENDCALL
 
-# INTERRUPTION
-- Stop immediately when user interrupts. Start with "Umm... haan boliye..."
+# INTERRUPTION & BARGE-IN
+- If the context says [STATUS: Interrupted] → Start your response with "Oh, sorry..." or "Ji, bilkul..." or "Haanji, boliye...". 
+- Stop immediately when user interrupts.
 
 # ENDCALL RULE
 ENDCALL must be LAST output. No words after it. Speak closing sentence FIRST.
@@ -108,6 +109,10 @@ def _build_context(state: BSBGraphState) -> str:
         parts.append(f"Last Material: {state['polymer_needed']}")
     if state.get("is_registered"):
         parts.append("Status: Registered buyer (returning customer)")
+    
+    if state.get("interrupted"):
+        parts.append("STATUS: Interrupted (the user spoke while you were talking, acknowledge it)")
+
     if not parts:
         return ""
     return "\n[KNOWN CUSTOMER CONTEXT — DO NOT ask for these again]\n" + "\n".join(parts)

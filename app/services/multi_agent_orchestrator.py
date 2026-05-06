@@ -165,6 +165,7 @@ class MultiAgentOrchestrator:
             next_agent=next_agent,
             stage=stage,
             should_end=False,
+            interrupted=is_interrupted,
             customer_name=customer_info.get("name"),
             customer_type=customer_info.get("customer_type"),
             polymer_needed=customer_info.get("polymer_needed"),
@@ -253,6 +254,7 @@ class MultiAgentOrchestrator:
         user_text: str,
         phone_number: str = "",
         language_code: str = "hi-IN",
+        is_interrupted: bool = False,
     ) -> tuple[str, bool]:
         """Async wrapper — runs LangGraph in thread pool with timeout + retry."""
         loop = asyncio.get_running_loop()
@@ -261,7 +263,7 @@ class MultiAgentOrchestrator:
             loop.run_in_executor(
                 None,
                 self.process_message,
-                call_id, user_text, phone_number, language_code,
+                call_id, user_text, phone_number, language_code, is_interrupted,
             ),
             timeout=18.0,
         )
@@ -274,6 +276,7 @@ class MultiAgentOrchestrator:
         user_text: str,
         phone_number: str = "",
         language_code: str = "hi-IN",
+        is_interrupted: bool = False,
     ) -> AsyncGenerator[tuple[str, bool], None]:
         """
         Yields (sentence_text, is_final) pairs for streaming TTS.
@@ -282,7 +285,7 @@ class MultiAgentOrchestrator:
         _SENT_RE = re.compile(r"[.?!।]")
 
         ai_text, should_end = await self.process_message_async(
-            call_id, user_text, phone_number, language_code
+            call_id, user_text, phone_number, language_code, is_interrupted
         )
 
         buf = ""

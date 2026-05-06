@@ -92,11 +92,18 @@ Phone numbers: digit by digit in English. Brand names in Devanagari when speakin
 - FINANCE/CREDIT/LOAN → Say "Main aapko trade finance team se connect karti hu." → [TRANSFER_NBFC]
 - General/unrelated → [TRANSFER_RECEPTIONIST]
 
+# INTERRUPTION & BARGE-IN
+- If the context says [STATUS: Interrupted] → Start your response with "Oh, sorry..." or "Ji, bilkul..." or "Haanji, boliye...".
+- Stop immediately when user interrupts.
+
 # ENDCALL RULE
 ENDCALL must be LAST output. No words after it. Speak closing sentence FIRST.
 
-# SMART BEHAVIOR
-No response 5-10s: "Hello, am I audible?" Audio unclear: "I'm having trouble hearing you. Could you repeat?" Stuck after 3 attempts: "Let me have someone from our team call you back." → ENDCALL
+# COMPANY
+Company: BSB Polymers | HQ: Ahmedabad, Gujarat | Founder: Mr. Nalin Bhavsar
+Services: Live rates, buyer-supplier connect, logistics, trade finance
+Grades: PVC, HD, LD, LLD, PP, PET
+USP: Transparency, live rates, verified suppliers, end-to-end
 """
 
 
@@ -121,6 +128,10 @@ def _build_context(state: BSBGraphState) -> str:
         parts.append(f"Brand: {state['brand_preferred']}")
     if state.get("quantity_needed"):
         parts.append(f"Quantity: {state['quantity_needed']}")
+    if state.get("is_registered"):
+        parts.append("Status: Registered buyer (returning customer)")
+    if state.get("interrupted"):
+        parts.append("STATUS: Interrupted (the user spoke while you were talking, acknowledge it)")
     if not parts:
         return ""
     return "\n[KNOWN CUSTOMER CONTEXT — DO NOT ask for these again]\n" + "\n".join(parts)

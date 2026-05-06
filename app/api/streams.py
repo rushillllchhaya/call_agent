@@ -154,6 +154,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         if vad_result.is_barge_in:
                             logger.info("[STREAM] Barge-in detected! Cancelling current playback/pipeline.")
                             pipeline.cancel()
+                            is_interrupted = True
                             if pipeline_task and not pipeline_task.done():
                                 pipeline_task.cancel()
                             audio_buffer.clear()
@@ -179,7 +180,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 audio_buffer.clear()
                                 
                                 async def run_pipeline(audio_data):
-                                    nonlocal current_language, should_end_call
+                                    nonlocal current_language, should_end_call, is_interrupted
                                     try:
                                         # Use streaming turn
                                         async for tts_audio, sentence, is_final in pipeline.stream_turn(
@@ -190,7 +191,10 @@ async def websocket_endpoint(websocket: WebSocket):
                                             call_id=call_id,
                                             phone_number=caller_phone,
                                             language_code=current_language,
+                                            is_interrupted=is_interrupted,
                                         ):
+                                            # Reset interruption after passing it to the graph
+                                            is_interrupted = False
                                             if tts_audio:
                                                 chunk_b64 = base64.b64encode(tts_audio).decode("utf-8")
                                                 await websocket.send_text(json.dumps({

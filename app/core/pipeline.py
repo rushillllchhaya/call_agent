@@ -246,6 +246,7 @@ class VoicePipeline:
         call_id: str,
         phone_number: str = "",
         language_code: str = "hi-IN",
+        is_interrupted: bool = False,
     ) -> AsyncGenerator[tuple[bytes, str, bool], None]:
         """
         Streaming pipeline: yields TTS audio sentence-by-sentence.
@@ -267,7 +268,7 @@ class VoicePipeline:
         # ── Step 2+3: Stream LLM → TTS sentence by sentence ─────
         should_end = False
         async for sentence, is_final in llm_stream_func(
-            call_id, transcript, phone_number, detected_lang,
+            call_id, transcript, phone_number, detected_lang, is_interrupted,
         ):
             if self._cancelled:
                 logger.info("[Pipeline:Stream] Cancelled mid-stream (barge-in)")
