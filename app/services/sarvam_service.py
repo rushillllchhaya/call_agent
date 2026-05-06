@@ -8,6 +8,7 @@ import io
 import wave
 import re
 from app.core.config import settings
+from app.core.retry import with_retry
 from sarvamai import AsyncSarvamAI
 
 logger = logging.getLogger("sarvam_service")
@@ -76,6 +77,7 @@ class SarvamService:
     """
     Handles interactions with Sarvam AI API for TTS and STT.
     Includes audio transcoding (WAV -> Mu-Law 8kHz).
+    Uses connection pooling (shared aiohttp session) for lower latency.
     """
 
     def __init__(self):
@@ -83,6 +85,28 @@ class SarvamService:
         self.tts_url = "https://api.sarvam.ai/text-to-speech"
         self.raw_stt_url = "https://api.sarvam.ai/speech-to-text"
         self.client = AsyncSarvamAI(api_subscription_key=self.api_key)
+        # Connection pooling: reuse TCP connections across calls
+        self._session: aiohttp.ClientSession | None = None
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Lazy-init shared session for connection pooling."""
+        if self._session is None or self._session.closed:
+            connector = aiohttp.TCPConnector(
+                limit=10,
+                keepalive_timeout=30,
+                enable_cleanup_closed=True,
+            )
+            self._session = aiohttp.ClientSession(
+                connector=connector,
+                timeout=aiohttp.ClientTimeout(total=15),
+            )
+        return self._session
+
+    async def close(self):
+        """Cleanup: close the shared session."""
+        if self._session and not self._session.closed:
+            await self._session.close()
+            self._session = None
         
     async def text_to_speech(self, text: str, language_code: str = "hi-IN") -> bytes:
         """
@@ -107,49 +131,52 @@ class SarvamService:
             return b""
 
         try:
-            logger.info(f"Sarvam TTS Request [{tts_lang}]: {text}")
-            
-            headers = {
-                "api-subscription-key": self.api_key,
-                "Content-Type": "application/json"
-            }
-            
-            payload = {
-                "inputs": [text],
-                "target_language_code": tts_lang,
-                "speaker": "shruti",
-                "model": "bulbul:v3",
-                "pace": 1.1,
-                "speech_sample_rate": 8000,
-                "enable_preprocessing": True,
-                "output_audio_codec": "wav"
-            }
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.tts_url,
-                    headers=headers,
-                    json=payload,
-                    timeout=aiohttp.ClientTimeout(total=15)
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        logger.info(f"Sarvam TTS Response Keys: {data.keys()}")
-                        
-                        audio_b64 = data.get("audios", [])[0]
-                        wav_bytes = base64.b64decode(audio_b64)
-                        logger.info(f"Received {len(wav_bytes)} bytes from Sarvam")
-                        logger.info(f"First 20 bytes: {wav_bytes[:20]}")
-                        
-                        return self._transcode_wav_to_mulaw(wav_bytes)
-                    else:
-                        error_text = await response.text()
-                        logger.error(f"Sarvam TTS Error {response.status}: {error_text}")
-                        return b""
-                        
+            return await self._tts_with_retry(text, tts_lang)
         except Exception as e:
-            logger.error(f"Sarvam TTS Exception: {e}")
+            logger.error(f"Sarvam TTS Exception (all retries failed): {e}")
             return b""
+
+    @with_retry(
+        max_retries=2,
+        base_delay=0.5,
+        retry_on=(aiohttp.ClientError, asyncio.TimeoutError, ConnectionError, KeyError, IndexError),
+        log_name="sarvam_tts",
+    )
+    async def _tts_with_retry(self, text: str, tts_lang: str) -> bytes:
+        """Internal TTS call wrapped with retry."""
+        logger.info(f"Sarvam TTS Request [{tts_lang}]: {text[:80]}")
+
+        headers = {
+            "api-subscription-key": self.api_key,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "inputs": [text],
+            "target_language_code": tts_lang,
+            "speaker": "shruti",
+            "model": "bulbul:v3",
+            "pace": 1.1,
+            "speech_sample_rate": 8000,
+            "enable_preprocessing": True,
+            "output_audio_codec": "wav"
+        }
+
+        session = await self._get_session()
+        async with session.post(
+            self.tts_url,
+            headers=headers,
+            json=payload,
+        ) as response:
+            if response.status == 200:
+                data = await response.json()
+                audio_b64 = data.get("audios", [])[0]
+                wav_bytes = base64.b64decode(audio_b64)
+                logger.info(f"Sarvam TTS: {len(wav_bytes)} bytes")
+                return self._transcode_wav_to_mulaw(wav_bytes)
+            else:
+                error_text = await response.text()
+                raise aiohttp.ClientError(f"Sarvam TTS {response.status}: {error_text[:200]}")
 
     def connect_stt_stream(self, language_code: str = "hi-IN"):
         """
@@ -185,41 +212,46 @@ class SarvamService:
         stt_lang = language_code if language_code in VALID_LANGS else "hi-IN"
         
         try:
-            wav_buffer = self._create_wav_from_mulaw(audio_data)
-            
-            form = aiohttp.FormData()
-            form.add_field('params', json.dumps({
-                "model": "saaras:v3",
-                "language_code": stt_lang,
-                "with_diarization": False
-            }))
-            form.add_field('file', wav_buffer, filename="audio.wav", content_type="audio/wav")
-
-            timeout = aiohttp.ClientTimeout(total=10)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.post(
-                    "https://api.sarvam.ai/speech-to-text", 
-                    headers={"api-subscription-key": self.api_key},
-                    data=form
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        detected_lang = data.get("language_code", "")
-                        transcript    = data.get("transcript", "")
-                        # Clamp: only return languages from our valid trio.
-                        # If Sarvam detects anything else, treat it as the
-                        # language we requested — no noise, no logs.
-                        if detected_lang not in VALID_LANGS:
-                            detected_lang = stt_lang
-                        return transcript, detected_lang
-                    else:
-                        text = await response.text()
-                        logger.error(f"Sarvam STT Error: {text}")
-                        return "", ""
+            return await self._stt_with_retry(audio_data, stt_lang)
         except Exception as e:
-            logger.error(f"Sarvam STT Exception: {e}")
+            logger.error(f"Sarvam STT Exception (all retries failed): {e}")
             return "", ""
-        return "", ""
+
+    @with_retry(
+        max_retries=2,
+        base_delay=0.3,
+        retry_on=(aiohttp.ClientError, asyncio.TimeoutError, ConnectionError),
+        log_name="sarvam_stt",
+    )
+    async def _stt_with_retry(self, audio_data: bytes, stt_lang: str) -> tuple[str, str]:
+        """Internal STT call wrapped with retry."""
+        VALID_LANGS = ["hi-IN", "gu-IN", "en-IN"]
+        wav_buffer = self._create_wav_from_mulaw(audio_data)
+
+        form = aiohttp.FormData()
+        form.add_field('params', json.dumps({
+            "model": "saaras:v3",
+            "language_code": stt_lang,
+            "with_diarization": False
+        }))
+        form.add_field('file', wav_buffer, filename="audio.wav", content_type="audio/wav")
+
+        session = await self._get_session()
+        async with session.post(
+            "https://api.sarvam.ai/speech-to-text",
+            headers={"api-subscription-key": self.api_key},
+            data=form,
+        ) as response:
+            if response.status == 200:
+                data = await response.json()
+                detected_lang = data.get("language_code", "")
+                transcript    = data.get("transcript", "")
+                if detected_lang not in VALID_LANGS:
+                    detected_lang = stt_lang
+                return transcript, detected_lang
+            else:
+                error_text = await response.text()
+                raise aiohttp.ClientError(f"Sarvam STT {response.status}: {error_text[:200]}")
 
     def _transcode_mulaw_to_pcm16(self, mulaw_data: bytes) -> bytes:
         """Transcodes 8kHz Mu-Law to 8kHz 16-bit PCM."""

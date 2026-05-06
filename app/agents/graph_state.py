@@ -47,6 +47,9 @@ class BSBGraphState(TypedDict):
     stage:         str          # Current stage name (greeting, qualification, …)
     should_end:    bool         # True = hang up the call
 
+    # Barge-in status
+    interrupted: bool
+
     # ── Collected customer data ────────────────────────────────────────────────
     customer_name:     Optional[str]
     customer_type:     Optional[str]   # 'manufacturer' | 'trader'

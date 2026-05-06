@@ -59,6 +59,24 @@ class DashboardManager:
             "details": details,
         })
 
+    async def broadcast_metrics(self, stt_ms: float, llm_ms: float, tts_ms: float, total_ms: float):
+        """Convenience: broadcast pipeline latency metrics."""
+        await self.broadcast({
+            "type": "metrics",
+            "stt_ms": stt_ms,
+            "llm_ms": llm_ms,
+            "tts_ms": tts_ms,
+            "total_ms": total_ms
+        })
+
+    async def broadcast_call_state(self, state: str, call_id: str = ""):
+        """Convenience: broadcast overall call state (connecting, active, completed)."""
+        await self.broadcast({
+            "type": "call_state",
+            "state": state,
+            "call_id": call_id
+        })
+
 
 # Singleton — imported by main.py and streams.py
 dashboard_manager = DashboardManager()

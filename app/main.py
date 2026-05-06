@@ -10,12 +10,14 @@ app = FastAPI(title=settings.PROJECT_NAME)
 from app.api.endpoints import router as api_router
 from app.api.webhooks import router as webhook_router
 from app.api.streams import router as streams_router
+from app.api.dashboard_api import router as dashboard_api_router
 
 from fastapi.staticfiles import StaticFiles
 
 app.include_router(api_router,       prefix="/api/v1")
 app.include_router(webhook_router,   prefix="/webhook")
 app.include_router(streams_router,   prefix="/ws")
+app.include_router(dashboard_api_router, prefix="/api/dashboard")
 
 # Mount Static and Dashboard
 import os

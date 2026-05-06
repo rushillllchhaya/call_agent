@@ -9,20 +9,13 @@ import logging
 from typing import Any
 
 from langchain_core.messages import SystemMessage, AIMessage
-from langchain_groq import ChatGroq
 
-from app.core.config import settings
+from app.core.llm import get_llm
 from app.agents.graph_state import BSBGraphState
 
 logger = logging.getLogger("logistics_agent")
 
-_llm = ChatGroq(
-    temperature=0.1,
-    groq_api_key=settings.GROQ_API_KEY,
-    model_name="meta-llama/llama-4-scout-17b-16e-instruct",
-    max_tokens=300,
-    request_timeout=15,
-)
+_llm = get_llm()
 
 SYSTEM_PROMPT = """You are Mohini, the Logistics Agent at BSB Polymers.
 

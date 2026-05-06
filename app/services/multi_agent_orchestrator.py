@@ -14,13 +14,13 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from typing import Optional, AsyncGenerator
-
 from sqlalchemy.orm import Session
 from langchain_core.messages import HumanMessage
+import groq
 
 from app.agents.graph_state import BSBGraphState
 from app.agents.session_store import SessionStore
+from app.core.retry import with_retry
 
 logger = logging.getLogger("multi_agent_orchestrator")
 
@@ -241,6 +241,12 @@ class MultiAgentOrchestrator:
         )
         return ai_text, should_end
 
+    @with_retry(
+        max_retries=2,
+        base_delay=0.5,
+        retry_on=(asyncio.TimeoutError, groq.RateLimitError, groq.APIConnectionError),
+        log_name="orchestrator_llm",
+    )
     async def process_message_async(
         self,
         call_id: str,
@@ -248,20 +254,17 @@ class MultiAgentOrchestrator:
         phone_number: str = "",
         language_code: str = "hi-IN",
     ) -> tuple[str, bool]:
-        """Async wrapper — runs LangGraph in thread pool with timeout."""
+        """Async wrapper — runs LangGraph in thread pool with timeout + retry."""
         loop = asyncio.get_running_loop()
-        try:
-            return await asyncio.wait_for(
-                loop.run_in_executor(
-                    None,
-                    self.process_message,
-                    call_id, user_text, phone_number, language_code,
-                ),
-                timeout=20.0,  # 20s max — better to fallback than go silent
-            )
-        except asyncio.TimeoutError:
-            logger.error(f"[MultiAgentOrchestrator] TIMEOUT (20s) for call_id={call_id}")
-            return "Ji, network thoda slow hai. Aap please dobara boliye?", False
+        # 18s timeout per attempt — better to retry than go silent
+        return await asyncio.wait_for(
+            loop.run_in_executor(
+                None,
+                self.process_message,
+                call_id, user_text, phone_number, language_code,
+            ),
+            timeout=18.0,
+        )
 
     # ── Streaming variant (sentence-by-sentence) ────────────────────────────
 
@@ -302,12 +305,16 @@ class MultiAgentOrchestrator:
 
     @staticmethod
     def _extract_ai_response(state: BSBGraphState) -> str:
-        """Pull the last AI message content from the messages list."""
+        """Pull the last AI message content from the messages list and strip backend tags."""
         from langchain_core.messages import AIMessage
+        import re
         messages = state.get("messages", [])
         for msg in reversed(messages):
             if isinstance(msg, AIMessage) and msg.content:
-                return str(msg.content).strip()
+                text = str(msg.content).strip()
+                # Strip out any remaining tool/bracket tags e.g. [FETCH_PRICE|...]
+                text = re.sub(r'\[.*?\]', '', text).strip()
+                return text if text else "Ji, thoda sa repeat karein please?"
         return "Ji, thoda sa repeat karein please?"
 
     def _sync_session(

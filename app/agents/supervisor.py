@@ -12,20 +12,16 @@ import asyncio
 import logging
 from typing import Any
 
-from langchain_groq import ChatGroq
-
-from app.core.config import settings
+from app.core.llm import get_llm, DEFAULT_ROUTING_MODEL
 from app.agents.graph_state import BSBGraphState
 
 logger = logging.getLogger("supervisor")
 
-# Larger LLM for supervisor-level routing decisions (only used on first turn)
-_llm = ChatGroq(
-    temperature=0,
-    groq_api_key=settings.GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile",
-    max_tokens=100,
-    request_timeout=15,
+# Larger LLM for supervisor-level routing decisions (if used in future)
+_llm = get_llm(
+    model_name=DEFAULT_ROUTING_MODEL,
+    temperature=0.0,
+    max_tokens=100
 )
 
 
