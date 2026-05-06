@@ -165,7 +165,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # ── Script Guard ──────────────────────────────────────────────────────
         # Reject characters from scripts outside our target trio (EN, HI, GU).
         # This catches non-semantic noise that STT transcribes into Gurmukhi, Tamil, Odia, etc.
-        # Allowed: Latin(EN), Devanagari(HI), Gujarati(GU).
+        # Allowed: English(EN), Devanagari(HI), Gujarati(GU).
         # Junk: \u0980-\u09FF (BE), \u0A00-\u0A7F (Gurmukhi), \u0B00-\u0D7F (OR, TA, TE, KA, MA)
         JUNK_SCRIPT_RE = re.compile(r'[\u0980-\u09FF\u0A00-\u0A7F\u0B00-\u0D7F]')
         if JUNK_SCRIPT_RE.search(transcript):
