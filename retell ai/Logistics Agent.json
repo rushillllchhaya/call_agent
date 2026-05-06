@@ -1,0 +1,377 @@
+{
+  "agent_id": "",
+  "channel": "voice",
+  "last_modification_timestamp": 1777965700741,
+  "agent_name": "Logistics Agent",
+  "response_engine": {
+    "type": "conversation-flow",
+    "version": 9,
+    "conversation_flow_id": "conversation_flow_a9f39d2046b5"
+  },
+  "language": "en-IN",
+  "data_storage_setting": "everything",
+  "opt_in_signed_url": false,
+  "version": 9,
+  "is_published": false,
+  "post_call_analysis_model": "gpt-4.1",
+  "pii_config": {
+    "mode": "post_call",
+    "categories": []
+  },
+  "handbook_config": {
+    "default_personality": true,
+    "speech_normalization": false,
+    "ai_disclosure": true
+  },
+  "voice_id": "openai-Monika",
+  "max_call_duration_ms": 3600000,
+  "interruption_sensitivity": 0.9,
+  "normalize_for_speech": false,
+  "allow_user_dtmf": true,
+  "user_dtmf_options": {},
+  "conversationFlow": {
+    "conversation_flow_id": "conversation_flow_a9f39d2046b5",
+    "version": 9,
+    "global_prompt": "You are Mohini, a warm, empathetic, and professional female receptionist at BSB Polymers. You help customers with  Logistics.\n\n\nIdentity & Tone\nSpeak in a friendly, natural mix of Hindi and English (Hinglish) when the user does so; match their language style\nNever assume the user's name, company, or location — always ask if unknown\nDo not pull or guess details from previous sessions unless explicitly confirmed by the user in the current conversation\n\n\nConversation Rules\nIf the user interrupts or trails off mid-sentence, stop immediately and address what they said\nWhen collecting a phone number, always read it back digit-by-digit and ask the user to confirm before saving\nNever correct a user's location by saying \"you said X\" if it was actually you who assumed X — own the mistake politely\nAsk one question at a time — never stack multiple questions\nNew User Flow Ask for: Name → Company → Location → Contact number (in that order, conversationally)\n\n\nFormatting\nAlways use Indian currency format (₹ and paise, e.g. ₹82.25/kg)\nFor large amounts, use Indian numbering (lakhs, not millions): ₹16,45,000 not ₹1,645,000\nWhen summarizing an order, always present it clearly and ask the user to confirm before proceeding\n\nWhatsapp Link\nWhen the user asks for a WhatsApp link or to be contacted on WhatsApp, immediately trigger the whatsapp-template-link function. Do not describe or explain what you are doing — just trigger it and confirm to the user that the link has been sent.\n\nCurrency Format\nAlways use the Indian currency system. Use ₹ for rupees and \"paisa\" for decimals — never say \"cents\". For example, say \"baees paisa\" not \"twenty-two cents\", and write ₹82.25 as \"₹82 aur 25 paisa\" if speaking it out. For large amounts, always use Indian numbering: lakh and crore.",
+    "nodes": [
+      {
+        "instruction": {
+          "type": "static_text",
+          "text": "Hello {{name}}, Welcome to the Logistics Services what can be of help,\nDo u want to use your logistic partners or would you like to hear from are own"
+        },
+        "name": "Welcome Node",
+        "edges": [
+          {
+            "destination_node_id": "node-1777626360817",
+            "id": "edge-1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs to use his own logistic partners"
+            }
+          },
+          {
+            "destination_node_id": "node-1777626360817",
+            "id": "edge-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs to use partner owned by BSB"
+            }
+          }
+        ],
+        "start_speaker": "agent",
+        "id": "start-node-1777526939242",
+        "type": "conversation",
+        "display_position": {
+          "x": 342,
+          "y": 433
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "end-call-node-1777526939242",
+        "type": "end",
+        "display_position": {
+          "x": 742,
+          "y": 433
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Politely end the call"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777626974820",
+            "id": "edge-1777626360817-a0jg500cv",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User then confirm he wants to proceed forward"
+            }
+          },
+          {
+            "destination_node_id": "node-1777627020811",
+            "id": "edge-1777626910101-xwlxi1wi1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User then disagrees with what was preposed and want to procure the materials from the location himself"
+            }
+          }
+        ],
+        "id": "node-1777626360817",
+        "type": "conversation",
+        "display_position": {
+          "x": 785.0223195222009,
+          "y": 544.7146236619341
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Based on the previous information from the sales agent fetch the data and speak the info of material and location of the user is.\nThen give him an estimate "
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777626974820",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 1278,
+          "y": 630
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "End call saying thank you using BSB, aapko hum koi bhi update ke liye call karenge. Thank you"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777627020811",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 1278,
+          "y": 894
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Apologize for not finding the best rates in market for logistics and poliety ask thst please contact us if they need anything else."
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777897146486",
+            "id": "edge-1777896970448-4jlo5btfo",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If user wants to his own logistic partners."
+            }
+          },
+          {
+            "destination_node_id": "node-1777900073567",
+            "id": "edge-1777897089776-q7f5znc3s",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "if user wants to use BSB's logistics partner."
+            }
+          }
+        ],
+        "id": "node-1777896970448",
+        "type": "conversation",
+        "display_position": {
+          "x": 366,
+          "y": 990
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Hello {{name}}, Welcome to the Logistics Services what can be of help.\n\nAsk the user if he want to use his own logisitc services or wants to use of BSB's"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777900064991",
+            "id": "edge-1777897146486-k0ejynewc",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Prompt the user for the whatsapp link and send it to him on his number"
+            }
+          }
+        ],
+        "id": "node-1777897146486",
+        "type": "conversation",
+        "display_position": {
+          "x": 822,
+          "y": 1062
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "User wants to use his own partners to prepare him for a closing call and send him the whatsapp for the logistic.\nAnd prompt the user for some interest in the app like for him to compare prices with diffrent logistic "
+        }
+      },
+      {
+        "tool_id": "tool-1777900013349",
+        "name": "Whatsapp-template-link",
+        "edges": [],
+        "global_node_setting": {
+          "condition": "Describe the condition to jump to this node"
+        },
+        "enable_typing_sound": false,
+        "id": "node-1777900015535",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1278,
+          "y": 294
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777900064991",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 1230,
+          "y": 1230
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Politely end the call"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777900198453",
+            "id": "edge-1777900073567-0zph2wr82",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Send the user the whatsapp link "
+            }
+          },
+          {
+            "destination_node_id": "node-1777900332558",
+            "id": "edge-1777900287333-jg2y6z9oa",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "The user confirms the prices but also says he wants NBFC /Trade Finance then transfer him to a diffrent agent "
+            }
+          }
+        ],
+        "id": "node-1777900073567",
+        "type": "conversation",
+        "display_position": {
+          "x": 822,
+          "y": 1446
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Take in the user material location and the location of where the user is present. Then give 4-5 ranges of prices and again divert him to app saying that which ever logistic service u need will be present on app u just need to select one"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777900198453",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 1254,
+          "y": 1542
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Politely end the call Thank you contacting BSB Ploymer."
+        }
+      },
+      {
+        "agent_id": "agent_df0d06a02ba8916d70a35268f9",
+        "edge": {
+          "id": "edge-1777900332559-a5oi2j9eh",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Agent Transfer Node",
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "node-1777900332558",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1254,
+          "y": 1806
+        }
+      }
+    ],
+    "start_node_id": "start-node-1777526939242",
+    "start_speaker": "agent",
+    "tools": [
+      {
+        "headers": {
+          "Authorization ": "Bearer wm_aNMFbDuiNjBRwpfKSipVVtArsOqbTcqImEgu4PnbCz1aKOREw0N3fkqBSzCr",
+          "Content-Type": "application/json"
+        },
+        "parameter_type": "json",
+        "method": "POST",
+        "query_params": {
+          "template_name": "template_name",
+          "language": "language",
+          "header_video_url": "header_video_url",
+          "phone": "phone_number"
+        },
+        "description": "This Api is used to send a whatsapp template link to the users",
+        "enable_typing_sound": false,
+        "type": "custom",
+        "url": "https://whatsapp.bsbinfotrade.com/api/v2/messages/template",
+        "tool_id": "tool-1777900013349",
+        "args_at_root": false,
+        "timeout_ms": 120000,
+        "speak_after_execution": true,
+        "name": "Whatsapp-Template-Link",
+        "response_variables": {
+          "MessageSent": "success",
+          "MessageID": "data.message_id"
+        },
+        "speak_during_execution": false,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "phone_number": {
+              "type": "string",
+              "description": "The 10-digit mobile number of the user to receive the WhatsApp message."
+            },
+            "template_name": {
+              "type": "string",
+              "description": "The name of the WhatsApp template.",
+              "enum": [
+                "ai_call_buyer_message"
+              ]
+            },
+            "language": {
+              "type": "string",
+              "description": "The language code for the template.",
+              "enum": [
+                "en"
+              ]
+            },
+            "header_video_url": {
+              "type": "string",
+              "description": "The URL of the video to be sent in the message header."
+            }
+          },
+          "required": [
+            "phone_number",
+            "template_name",
+            "language",
+            "header_video_url"
+          ]
+        }
+      }
+    ],
+    "model_choice": {
+      "type": "cascading",
+      "model": "gpt-4.1"
+    },
+    "tool_call_strict_mode": true,
+    "knowledge_base_ids": [],
+    "kb_config": {
+      "top_k": 3,
+      "filter_score": 0.6
+    },
+    "begin_tag_display_position": {
+      "x": 122,
+      "y": 333
+    },
+    "is_published": false,
+    "is_transfer_cf": false
+  }
+}

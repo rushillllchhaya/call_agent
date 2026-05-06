@@ -1,0 +1,200 @@
+{
+  "agent_id": "",
+  "channel": "voice",
+  "last_modification_timestamp": 1777966595746,
+  "agent_name": "NBFC Finance Agent",
+  "response_engine": {
+    "type": "conversation-flow",
+    "version": 6,
+    "conversation_flow_id": "conversation_flow_42b2e61e70bf"
+  },
+  "language": "en-IN",
+  "data_storage_setting": "everything",
+  "opt_in_signed_url": false,
+  "version": 6,
+  "is_published": false,
+  "post_call_analysis_model": "gpt-4.1",
+  "pii_config": {
+    "mode": "post_call",
+    "categories": []
+  },
+  "handbook_config": {
+    "default_personality": true,
+    "speech_normalization": false,
+    "ai_disclosure": true
+  },
+  "voice_id": "openai-Monika",
+  "max_call_duration_ms": 3600000,
+  "interruption_sensitivity": 0.9,
+  "normalize_for_speech": false,
+  "allow_user_dtmf": true,
+  "user_dtmf_options": {},
+  "conversationFlow": {
+    "conversation_flow_id": "conversation_flow_42b2e61e70bf",
+    "version": 6,
+    "global_prompt": "You are Mohini, a warm, empathetic, and professional female receptionist at BSB Polymers. You help customers with Trade Finance.\n\n\nIdentity & Tone\nSpeak in a friendly, natural mix of Hindi and English (Hinglish) when the user does so; match their language style\nNever assume the user's name, company, or location — always ask if unknown\nDo not pull or guess details from previous sessions unless explicitly confirmed by the user in the current conversation\n\n\nConversation Rules\nIf the user interrupts or trails off mid-sentence, stop immediately and address what they said\nWhen collecting a phone number, always read it back digit-by-digit and ask the user to confirm before saving\nNever correct a user's location by saying \"you said X\" if it was actually you who assumed X — own the mistake politely\nAsk one question at a time — never stack multiple questions\nNew User Flow Ask for: Name → Company → Location → Contact number (in that order, conversationally)\n\n\nFormatting\nAlways use Indian currency format (₹ and paise, e.g. ₹82.25/kg)\nFor large amounts, use Indian numbering (lakhs, not millions): ₹16,45,000 not ₹1,645,000\nWhen summarizing an order, always present it clearly and ask the user to confirm before proceeding\n\nWhatsapp Link\nWhen the user asks for a WhatsApp link or to be contacted on WhatsApp, immediately trigger the whatsapp-template-link function. Do not describe or explain what you are doing — just trigger it and confirm to the user that the link has been sent.\n\nCurrency Format\nAlways use the Indian currency system. Use ₹ for rupees and \"paisa\" for decimals — never say \"cents\". For example, say \"baees paisa\" not \"twenty-two cents\", and write ₹82.25 as \"₹82 aur 25 paisa\" if speaking it out. For large amounts, always use Indian numbering: lakh and crore.",
+    "nodes": [
+      {
+        "instruction": {
+          "type": "static_text",
+          "text": "Hi {{name}}, welcome to the Trade Finance, kya aap aapki requirements bata sakte ho?"
+        },
+        "name": "Welcome Node",
+        "edges": [
+          {
+            "destination_node_id": "node-1777616585411",
+            "id": "edge-1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User wants trader finance/ buy on credit/ buyer credit"
+            }
+          },
+          {
+            "id": "edge-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs to check the order status"
+            }
+          }
+        ],
+        "start_speaker": "agent",
+        "id": "start-node-1777526975049",
+        "type": "conversation",
+        "display_position": {
+          "x": 342,
+          "y": 433
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "id": "edge-1777616585411-mf2gv1hzb",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After the saying send  whatspp link after for app or website tempalte"
+            }
+          }
+        ],
+        "id": "node-1777616585411",
+        "type": "conversation",
+        "display_position": {
+          "x": 822,
+          "y": 438
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Then divert him to BSB website or BSB App and politly say the further information and steps for trade finance will be in our platform. Please fill the form and your application will start quickly."
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777624669302",
+            "id": "edge-1777618177209-4y905s5y5",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User does not require anything"
+            }
+          }
+        ],
+        "id": "node-1777618177209",
+        "type": "conversation",
+        "display_position": {
+          "x": 1422,
+          "y": 438
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Finally ask the user does he have anyt other requirements or any thing he needs"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777624669302",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 1902,
+          "y": 630
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Politely end the call"
+        }
+      }
+    ],
+    "components": [
+      {
+        "name": "Component L1",
+        "start_node_id": "conversation-1777617664972",
+        "conversation_flow_component_id": "cf-component-1777617664971",
+        "nodes": [
+          {
+            "name": "Conversation",
+            "edges": [],
+            "id": "conversation-1777617664972",
+            "type": "conversation",
+            "display_position": {
+              "x": 200,
+              "y": 100
+            },
+            "instruction": {
+              "type": "prompt",
+              "text": "Describe what the AI should say or do"
+            }
+          },
+          {
+            "name": "Exit Component",
+            "id": "component-end-1777617664972",
+            "type": "end",
+            "speak_during_execution": false,
+            "display_position": {
+              "x": 600,
+              "y": 100
+            },
+            "instruction": {
+              "type": "static_text",
+              "text": "Component completed"
+            }
+          }
+        ],
+        "user_modified_timestamp": 1777617664972,
+        "tools": []
+      }
+    ],
+    "start_node_id": "start-node-1777526975049",
+    "start_speaker": "agent",
+    "model_choice": {
+      "type": "cascading",
+      "model": "gpt-4.1"
+    },
+    "tool_call_strict_mode": true,
+    "knowledge_base_ids": [],
+    "kb_config": {
+      "top_k": 3,
+      "filter_score": 0.6
+    },
+    "begin_tag_display_position": {
+      "x": 122,
+      "y": 333
+    },
+    "notes": [
+      {
+        "id": "note-1777618148593",
+        "size": {
+          "width": 200,
+          "height": 150
+        },
+        "display_position": {
+          "x": 1158,
+          "y": 510
+        },
+        "content": ""
+      }
+    ],
+    "is_published": false,
+    "is_transfer_cf": false
+  }
+}

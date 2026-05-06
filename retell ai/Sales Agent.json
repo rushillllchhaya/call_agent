@@ -1,0 +1,544 @@
+{
+  "agent_id": "",
+  "channel": "voice",
+  "last_modification_timestamp": 1777965754127,
+  "agent_name": "Sales Agent",
+  "response_engine": {
+    "type": "conversation-flow",
+    "version": 7,
+    "conversation_flow_id": "conversation_flow_54b34dc9252f"
+  },
+  "language": "en-US",
+  "data_storage_setting": "everything",
+  "opt_in_signed_url": false,
+  "version": 7,
+  "is_published": false,
+  "post_call_analysis_model": "gpt-4.1",
+  "pii_config": {
+    "mode": "post_call",
+    "categories": []
+  },
+  "handbook_config": {
+    "default_personality": true,
+    "speech_normalization": false,
+    "ai_disclosure": true
+  },
+  "voice_id": "openai-Monika",
+  "max_call_duration_ms": 3600000,
+  "interruption_sensitivity": 0.9,
+  "normalize_for_speech": false,
+  "allow_user_dtmf": true,
+  "user_dtmf_options": {},
+  "conversationFlow": {
+    "conversation_flow_id": "conversation_flow_54b34dc9252f",
+    "version": 7,
+    "global_prompt": "You are Mohini, a warm, empathetic, and professional female receptionist at BSB Polymers. You help customers with Polymer Rates.\n\n\nIdentity & Tone\nSpeak in a friendly, natural mix of Hindi and English (Hinglish) when the user does so; match their language style\nNever assume the user's name, company, or location — always ask if unknown\nDo not pull or guess details from previous sessions unless explicitly confirmed by the user in the current conversation\n\n\nConversation Rules\nIf the user interrupts or trails off mid-sentence, stop immediately and address what they said\nWhen collecting a phone number, always read it back digit-by-digit and ask the user to confirm before saving\nNever correct a user's location by saying \"you said X\" if it was actually you who assumed X — own the mistake politely\nAsk one question at a time — never stack multiple questions\nNew User Flow Ask for: Name → Company → Location → Contact number (in that order, conversationally)\n\n\nFormatting\nAlways use Indian currency format (₹ and paise, e.g. ₹82.25/kg)\nFor large amounts, use Indian numbering (lakhs, not millions): ₹16,45,000 not ₹1,645,000\nWhen summarizing an order, always present it clearly and ask the user to confirm before proceeding\n\nWhatsapp Link\nWhen the user asks for a WhatsApp link or to be contacted on WhatsApp, immediately trigger the whatsapp-template-link function. Do not describe or explain what you are doing — just trigger it and confirm to the user that the link has been sent.\n\nCurrency Format\nAlways use the Indian currency system. Use ₹ for rupees and \"paisa\" for decimals — never say \"cents\". For example, say \"baees paisa\" not \"twenty-two cents\", and write ₹82.25 as \"₹82 aur 25 paisa\" if speaking it out. For large amounts, always use Indian numbering: lakh and crore.",
+    "nodes": [
+      {
+        "instruction": {
+          "type": "prompt",
+          "text": "Hello this is Sales agent. What material is in your today requirements. Do you need prices it have any perticular requirements\n\nAnd the user will say material_name or brand_name or grade_name. The user may speak in any order whatsoever and can combine any of the other"
+        },
+        "name": "Welcome Node",
+        "edges": [
+          {
+            "destination_node_id": "node-1777539541413",
+            "id": "edge-1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs prices of materials he asked for "
+            }
+          },
+          {
+            "id": "edge-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs to check the order status"
+            }
+          }
+        ],
+        "start_speaker": "agent",
+        "id": "start-node-1777526850107",
+        "type": "conversation",
+        "display_position": {
+          "x": 342,
+          "y": 433
+        }
+      },
+      {
+        "variables": [
+          {
+            "name": "material_name",
+            "type": "string",
+            "description": "Name of the material like : PP, HDPE, LLDPE, LDPE, PET, PVC"
+          },
+          {
+            "name": "Brand_name",
+            "type": "string",
+            "description": "name of the brand like RIL, Hygain, Xinfa etc"
+          },
+          {
+            "name": "grade_name",
+            "type": "string",
+            "description": "name of the grade and this value can be alpha-numerical like SG5, HS1000R, WK-801, etc "
+          }
+        ],
+        "else_edge": {
+          "destination_node_id": "node-1777540457871",
+          "id": "node-1777539541413-else-edge",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Extract Variables",
+        "edges": [
+          {
+            "id": "edge-1777539541413-a4n0izbv6",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If what the user is order correctly then run the get price api and compleate the "
+            }
+          }
+        ],
+        "id": "node-1777539541413",
+        "type": "extract_dynamic_variables",
+        "display_position": {
+          "x": 750,
+          "y": 438
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777554378959",
+            "id": "edge-1777540457871-llb2eqtai",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After Confirmation"
+            }
+          }
+        ],
+        "id": "node-1777540457871",
+        "type": "conversation",
+        "display_position": {
+          "x": 774,
+          "y": 990
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "sir pata nhi chala did u ask of this {{material_name}}, {{brand_name}},{{grade_name}}"
+        }
+      },
+      {
+        "tool_id": "tool-1777549812494",
+        "name": "Get-price-api",
+        "edges": [],
+        "global_node_setting": {
+          "condition": "When the user asks for peices use this node to relate himn the prices"
+        },
+        "enable_typing_sound": false,
+        "id": "node-1777549816631",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 366,
+          "y": 990
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777554463974",
+            "id": "edge-1777554378959-3s47bdzu1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If user accepts the location of material to him"
+            }
+          },
+          {
+            "destination_node_id": "node-1777624809372",
+            "id": "edge-1777554445273-vnq5aqxzp",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the user denies the location of the material"
+            }
+          }
+        ],
+        "id": "node-1777554378959",
+        "type": "conversation",
+        "display_position": {
+          "x": 1278,
+          "y": 894
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "The agent will give out the list of materials avaliable with locations at which they are present"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777612607005",
+            "id": "edge-1777554463974-25xmk15yh",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User requires Logistics"
+            }
+          },
+          {
+            "destination_node_id": "node-1777612676713",
+            "id": "edge-1777554553724-jjkzgbfgr",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User requires Trade Finance\n"
+            }
+          },
+          {
+            "destination_node_id": "node-1777614686914",
+            "id": "edge-1777554576147-kg9fgvkrj",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User does not require Logistics and he will use procure the material own his own"
+            }
+          },
+          {
+            "destination_node_id": "node-1777614706945",
+            "id": "edge-1777554622603-71icn4z0h",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User does not require Trade Finance and he will pay for the material upfront"
+            }
+          }
+        ],
+        "id": "node-1777554463974",
+        "type": "conversation",
+        "display_position": {
+          "x": 1686,
+          "y": 678
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Confirm his order and tell them that would the user be requiring the logistics or trade finance for the recently confirmed order"
+        }
+      },
+      {
+        "agent_id": "agent_62b5d1a16969f07f860d93614a",
+        "edge": {
+          "id": "edge-1777612607005-3t6xbnx03",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Logistic Agent Transfer Node",
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "node-1777612607005",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 2166,
+          "y": 654
+        }
+      },
+      {
+        "agent_id": "agent_63c62f9a85be2e5d8207f9af3f",
+        "edge": {
+          "id": "edge-1777612676713-lr5sq3fqq",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Trade Finance Agent Transfer Node",
+        "agent_version": 1,
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "node-1777612676713",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 2166,
+          "y": 870
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777614686914",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2166,
+          "y": 1086
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "As the user does not require logistics and will procure the material own his own terms close the call saying appropriate final lines"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777614706945",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2166,
+          "y": 1302
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "As the user does not require trade finance and will procure the material own his own terms close the call saying appropriate final lines"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777884359281",
+            "id": "edge-1777624809372-v6h438u8h",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the person agrees to generate an IRM request then follow them to APP Link"
+            }
+          }
+        ],
+        "id": "node-1777624809372",
+        "type": "conversation",
+        "display_position": {
+          "x": 1686,
+          "y": 1254
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "I am sorry but the material you require is not at the desired location u can generate an IRM request for the specific material and desired location"
+        }
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777896382581",
+            "id": "edge-1777884359281-kju1vajii",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User agress for the Link Share"
+            }
+          },
+          {
+            "destination_node_id": "node-1777885944108",
+            "id": "edge-1777885432562-bzaj5kfti",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User disagree then to send whatsapp link and go to the closing line"
+            }
+          }
+        ],
+        "id": "node-1777884359281",
+        "type": "conversation",
+        "display_position": {
+          "x": 2118,
+          "y": 1590
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sir, apko IRM request hamare app se daalni hogi toh kya mein app ki link share kar doon\n"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777885944108",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2550,
+          "y": 1854
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "End the call by saying similr to thank you your time and conatcting BSB Polymers "
+        }
+      },
+      {
+        "tool_id": "tool-1777895481759",
+        "name": "Whatsapp-template-link",
+        "edges": [],
+        "global_node_setting": {
+          "condition": "Describe the condition to jump to this node"
+        },
+        "enable_typing_sound": false,
+        "id": "node-1777895485907",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 366,
+          "y": 1230
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "End Call",
+        "id": "node-1777896382581",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2550,
+          "y": 1638
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Politely end the call. I have shared the link plzz register ad then request the materials you want at your price."
+        }
+      }
+    ],
+    "start_node_id": "start-node-1777526850107",
+    "start_speaker": "agent",
+    "tools": [
+      {
+        "headers": {},
+        "parameter_type": "json",
+        "method": "POST",
+        "query_params": {},
+        "description": "Api calls to fetch prices from the server that are live prices",
+        "enable_typing_sound": false,
+        "type": "custom",
+        "url": "https://backend.bsbinfotrade.com/api/web/seller-offer-list",
+        "tool_id": "tool-1777549812494",
+        "args_at_root": false,
+        "timeout_ms": 120000,
+        "speak_after_execution": true,
+        "name": "Get-Price-API",
+        "response_variables": {
+          "Process": "data[0].process_name",
+          "StockQty": "data[0].qty",
+          "Price": "data[0].total_price",
+          "StockLocation": "data[0].location"
+        },
+        "speak_during_execution": false,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code_name": {
+              "type": "string",
+              "description": "The specific grade code, e.g., RH03."
+            },
+            "grade_name": {
+              "type": "string",
+              "description": "The category of material, e.g., PP or PVC."
+            },
+            "brand_name": {
+              "type": "string",
+              "description": "The brand name of the material, e.g., OPAL."
+            }
+          },
+          "required": [
+            "brand_name",
+            "grade_name"
+          ]
+        }
+      },
+      {
+        "headers": {
+          "Authorization ": "Bearer wm_aNMFbDuiNjBRwpfKSipVVtArsOqbTcqImEgu4PnbCz1aKOREw0N3fkqBSzCr",
+          "Content-Type": "application/json"
+        },
+        "parameter_type": "json",
+        "method": "POST",
+        "query_params": {
+          "template_name": "template_name",
+          "language": "language",
+          "header_video_url": "header_video_url",
+          "phone": "phone_number"
+        },
+        "description": "This Api is used to send a whatsapp template link to the users",
+        "enable_typing_sound": false,
+        "type": "custom",
+        "url": "https://whatsapp.bsbinfotrade.com/api/v2/messages/template",
+        "tool_id": "tool-1777895481759",
+        "args_at_root": false,
+        "timeout_ms": 120000,
+        "speak_after_execution": true,
+        "name": "Whatsapp-Template-Link",
+        "response_variables": {
+          "MessageSent": "success",
+          "MessageID": " data.message_id"
+        },
+        "speak_during_execution": false,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "phone_number": {
+              "type": "string",
+              "description": "The 10-digit mobile number of the user to receive the WhatsApp message."
+            },
+            "template_name": {
+              "type": "string",
+              "description": "The name of the WhatsApp template.",
+              "enum": [
+                "ai_call_buyer_message"
+              ]
+            },
+            "language": {
+              "type": "string",
+              "description": "The language code for the template.",
+              "enum": [
+                "en"
+              ]
+            },
+            "header_video_url": {
+              "type": "string",
+              "description": "The URL of the video to be sent in the message header."
+            }
+          },
+          "required": [
+            "phone_number",
+            "template_name",
+            "language",
+            "header_video_url"
+          ]
+        }
+      }
+    ],
+    "model_choice": {
+      "type": "cascading",
+      "model": "gpt-4.1"
+    },
+    "tool_call_strict_mode": true,
+    "knowledge_base_ids": [],
+    "kb_config": {
+      "top_k": 3,
+      "filter_score": 0.6
+    },
+    "begin_tag_display_position": {
+      "x": 122,
+      "y": 333
+    },
+    "notes": [
+      {
+        "id": "note-1777636697207",
+        "size": {
+          "width": 200,
+          "height": 150
+        },
+        "display_position": {
+          "x": 1086,
+          "y": 510
+        },
+        "content": "Process to be added for eg PP raffia"
+      }
+    ],
+    "is_published": false,
+    "flex_mode": false,
+    "is_transfer_cf": false
+  }
+}

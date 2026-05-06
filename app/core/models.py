@@ -192,6 +192,27 @@ class PricingRule(Base):
     margin_percent = Column(Float, default=0.05) # 5% margin
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class ConversationSession(Base):
+    """
+    Tracks every voice call handled by the BSB multi-agent LangGraph system.
+
+    One row per call_id. Stores the full routing history, message log,
+    collected lead fields, and which agent last handled the call.
+    """
+    __tablename__ = "conversation_sessions"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    call_id       = Column(String, unique=True, nullable=False, index=True)
+    phone_number  = Column(String, nullable=True, index=True)
+    is_registered = Column(Boolean, default=False)      # True = known buyer/seller
+    agent_used    = Column(String, default="supervisor") # Last active agent name
+    stage         = Column(String, default="greeting")   # Current conversation stage
+    history       = Column(Text, default="[]")           # JSON array of {role, content, timestamp}
+    customer_info = Column(Text, default="{}")           # JSON dict of collected fields
+    created_at    = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at    = Column(DateTime(timezone=True), onupdate=func.now())
+
+
 class PolymerInventory(Base):
     """
     Dedicated inventory table for BSB's own stock or aggregated stock.

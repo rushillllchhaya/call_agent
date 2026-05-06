@@ -206,6 +206,11 @@ class SarvamService:
                         data = await response.json()
                         detected_lang = data.get("language_code", "")
                         transcript    = data.get("transcript", "")
+                        # Clamp: only return languages from our valid trio.
+                        # If Sarvam detects anything else, treat it as the
+                        # language we requested — no noise, no logs.
+                        if detected_lang not in VALID_LANGS:
+                            detected_lang = stt_lang
                         return transcript, detected_lang
                     else:
                         text = await response.text()

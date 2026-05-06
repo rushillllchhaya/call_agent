@@ -2,10 +2,9 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from app.core.database import get_db, SessionLocal
 from app.services.sarvam_service import SarvamService
-from app.services.orchestrator import Orchestrator
-from app.services.ai_agent import stream_ai_response_sentences, warmup_llm
+from app.services.multi_agent_orchestrator import MultiAgentOrchestrator
 from app.core.models import Lead
-from app.services.state import ConversationState
+from app.services.dashboard import dashboard_manager
 
 
 import logging
@@ -52,6 +51,7 @@ sarvam_logger.addHandler(ch)
 router = APIRouter()
 
 
+
 from typing import Deque
 from collections import deque
 
@@ -59,24 +59,27 @@ from collections import deque
 async def websocket_endpoint(websocket: WebSocket):
     """
     Real-time bidirectional voice streaming endpoint.
-    Receives audio from Tata → Sarvam STT → AI → Sarvam TTS → sends audio back
+    Receives audio from Tata → Sarvam STT → Multi-Agent LangGraph → Sarvam TTS → sends audio back.
     """
     await websocket.accept()
     logger.info("WebSocket Connected: /tata-audio")
-    
+
     # Initialize services
     voice_service = SarvamService()
     loop = asyncio.get_running_loop()
-    
 
-    def reset_state_sync(user_id: int):
-        with SessionLocal() as db:
-            orch = Orchestrator(db)
-            orch.reset_state(user_id)
+    # ── Multi-Agent Orchestrator (LangGraph) ──────────────────────────────────
+    # One orchestrator per call; db session opened per-turn in thread executor.
+    def _make_orchestrator():
+        from app.core.database import SessionLocal
+        db = SessionLocal()
+        return MultiAgentOrchestrator(db), db
 
-    # User ID for this call (will be resolved from Caller ID)
-    user_id = 999 
-    caller_phone = None
+    multi_orch, _orch_db = await loop.run_in_executor(None, _make_orchestrator)
+
+    # Unique call identifier — set from stream_sid when stream starts
+    call_id: str = str(__import__("uuid").uuid4())
+    caller_phone: str = ""
     
     # Buffer for accumulating audio chunks for VAD
     # We maintain a 'silence_buffer' (pre-roll) and 'audio_buffer' (active speech)
@@ -84,10 +87,13 @@ async def websocket_endpoint(websocket: WebSocket):
     silence_buffer: Deque[bytes] = deque(maxlen=10) # ~600ms of pre-roll context (assuming 60ms chunks)
     
     # VAD Parameters
-    # Dynamic VAD: Load from env or fallback to 500
+    # TELECOM NOTE: Phone audio is heavily compressed — RMS is much lower than mic input.
+    # Threshold 40 works for 8kHz mulaw telecom audio. Default 150 was designed for mic.
     SILENCE_THRESHOLD_MS = int(os.getenv("CALL_SILENCE_MS", 700))
-    VOICE_THRESHOLD = int(os.getenv("VOICE_THRESHOLD", 150))
-    MAX_BUFFER_SIZE = 1024 * 500 # 500KB Safety limit
+    VOICE_THRESHOLD = int(os.getenv("VOICE_THRESHOLD", 40))   # was 150 — too high for telecom
+    MAX_BUFFER_SIZE = 1024 * 500  # 500KB Safety limit
+    MIN_AUDIO_BYTES = 3200  # ~400ms at 8kHz — anything shorter is noise
+    vad_suppressed_until = 0  # timestamp until which VAD is muted (greeting/TTS echo)
     
     last_voice_time = 0
     is_speech_active = False # True if we are currently recording a "sentence"
@@ -98,14 +104,16 @@ async def websocket_endpoint(websocket: WebSocket):
     # Track if bot is currently speaking (to avoid processing echo)
     call_state = CallStatus.LISTENING
     current_language = "hi-IN"   # tracks caller's detected language across turns
-    language_locked = False
+    # VALID_TRIO: STT will ONLY ever be called with one of these.
+    # This means the STT engine literally cannot output Tamil, Gurmukhi, etc.
+    VALID_TRIO = ["hi-IN", "en-IN", "gu-IN"]
 
     interruption_event = asyncio.Event()
     processing_task = None
     last_tts_start_time = 0
 
     async def process_speech_buffer():
-        nonlocal audio_buffer, is_speech_active, current_language, call_state, language_locked
+        nonlocal audio_buffer, is_speech_active, current_language, call_state
         
         # If already thinking, ignore new speech
         if call_state == CallStatus.THINKING:
@@ -118,6 +126,13 @@ async def websocket_endpoint(websocket: WebSocket):
         if len(audio_buffer) == 0:
             return
 
+        # Reject very short buffers — almost always ambient noise
+        if len(audio_buffer) < MIN_AUDIO_BYTES:
+            logger.info(f"Buffer too short ({len(audio_buffer)} bytes < {MIN_AUDIO_BYTES}). Skipping noise.")
+            audio_buffer.clear()
+            is_speech_active = False
+            return
+
         logger.info(f"VAD Triggered: Processing {len(audio_buffer)} bytes")
         
         audio_data = bytes(audio_buffer)
@@ -125,29 +140,24 @@ async def websocket_endpoint(websocket: WebSocket):
         is_speech_active = False
 
         # ── STT (REST-Primary) ────────────────────────────────────────────────
-        logger.info(f"Transcribing via REST using: {current_language}")
-        transcript, detected_lang = await voice_service.transcribe_audio(audio_data, current_language)
+        # ALWAYS pass a language from the valid trio. Never let an unsupported lang propagate.
+        stt_lang = current_language if current_language in VALID_TRIO else "hi-IN"
+        logger.info(f"Transcribing via REST using: {stt_lang}")
+        transcript, detected_lang = await voice_service.transcribe_audio(audio_data, stt_lang)
         
-        # ── Language Lockdown (HI, EN, GU only) ──────────────────────────────
-        if detected_lang and not language_locked:
-            VALID_TRIO = ["hi-IN", "gu-IN", "en-IN"]
-            
-            # If the detected language is completely outside our trio, ignore it
-            if detected_lang in VALID_TRIO:
-                logger.info(f"Language Locked (Supported detected): {detected_lang}")
+        # ── Language Adaptation (HI, EN, GU only) ────────────────────────────
+        # STT service already clamps to valid trio, so detected_lang is always valid.
+        if detected_lang and detected_lang in VALID_TRIO:
+            if detected_lang != current_language:
+                logger.info(f"Language switched: {current_language} → {detected_lang}")
                 current_language = detected_lang
-                language_locked = True
         
         if not (transcript and transcript.strip()):
             logger.info("No transcript (silence/noise)")
             return
 
         # ── Noise Guard ───────────────────────────────────────────────────────
-        from app.services.language_handler import LanguageHandler
-        try:
-            english_text = LanguageHandler.normalize_text(transcript)
-        except Exception:
-            english_text = transcript
+        english_text = transcript
         
         stripped_check = english_text.strip().lower().rstrip(".")
         words_check    = stripped_check.split()
@@ -161,16 +171,30 @@ async def websocket_endpoint(websocket: WebSocket):
         # Whitelist common short responses
         if stripped_check in ["hi", "hello", "हाँ", "ji", "जी", "नही", "ok", "okay", "sure", "ਹਾਂਜੀ"]:
             is_noise = False
+        
+        # Blacklist common noise-triggered single words
+        NOISE_WORDS = {"cough", "hmm", "uh", "um", "ah", "huh", "oh", "mm", "umm", "ahem"}
+        if stripped_check in NOISE_WORDS:
+            is_noise = True
 
         # ── Script Guard ──────────────────────────────────────────────────────
-        # Reject characters from scripts outside our target trio (EN, HI, GU).
-        # This catches non-semantic noise that STT transcribes into Gurmukhi, Tamil, Odia, etc.
-        # Allowed: English(EN), Devanagari(HI), Gujarati(GU).
-        # Junk: \u0980-\u09FF (BE), \u0A00-\u0A7F (Gurmukhi), \u0B00-\u0D7F (OR, TA, TE, KA, MA)
+        # If transcript contains non-target scripts (Bengali, Gurmukhi, Tamil, etc.),
+        # it's likely a misdetection. Re-transcribe with hi-IN instead of dropping.
         JUNK_SCRIPT_RE = re.compile(r'[\u0980-\u09FF\u0A00-\u0A7F\u0B00-\u0D7F]')
         if JUNK_SCRIPT_RE.search(transcript):
-            logger.info(f"[STREAM] Junk script detected in transcript: '{transcript}'. Flagging as noise.")
-            is_noise = True
+            logger.warning(f"[STREAM] Junk script in transcript: '{transcript}'. Re-transcribing with hi-IN.")
+            transcript, _ = await voice_service.transcribe_audio(audio_data, "hi-IN")
+            if not (transcript and transcript.strip()):
+                logger.info("[STREAM] Re-transcription returned empty. Dropping.")
+                return
+            logger.info(f"[STREAM] Re-transcribed as: '{transcript}'")
+            english_text = transcript
+            stripped_check = english_text.strip().lower().rstrip(".")
+            words_check = stripped_check.split()
+            # Re-check if still junk after hi-IN re-transcription
+            if JUNK_SCRIPT_RE.search(transcript):
+                logger.info(f"[STREAM] Still junk after re-transcription. Dropping.")
+                return
 
         # STT HALLUCINATION BLACKLIST: Filter out common noise-triggered nonsense
         HALLUCINATION_BLACKLIST = [
@@ -199,65 +223,38 @@ async def websocket_endpoint(websocket: WebSocket):
             return
 
         logger.info(f"User said [{current_language}]: {transcript}")
+        try:
+            asyncio.create_task(dashboard_manager.broadcast({
+                "type": "transcript",
+                "speaker": "user",
+                "text": transcript
+            }))
+        except Exception:
+            pass
+
         call_state = CallStatus.THINKING
 
         try:
-            # ── Load state & build orchestrator context (in executor) ─────────
-            def _load_context():
-                with SessionLocal() as db:
-                    orch = Orchestrator(db)
-                    state_obj = orch._load_state(user_id)
-                    lang_label = {
-                        "hi-IN": "Hindi (Hinglish is fine, use Devanagari where natural)",
-                        "gu-IN": "Gujarati (mix with Hindi/English naturally if needed)",
-                        "en-IN": "English (you may sprinkle Hindi courtesy words like 'Ji', 'Theek hai')",
-                    }.get(state_obj.detected_language, "Hindi")
-                    lang_instruction = (
-                        f"LANGUAGE: The caller is currently speaking {lang_label}. "
-                        f"Respond primarily in {lang_label}. "
-                        "CRITICAL: Always fill the 'ai_response' key FIRST with your spoken text. NEVER leave it empty."
-                    )
-                    stage_instr = orch._stage_instruction(state_obj)
-                    system_instruction_inner = (lang_instruction + "\n" + stage_instr) if stage_instr else lang_instruction
-                    from app.services.db_context import build_catalog_context
-                    catalog_inner = build_catalog_context(
-                        db,
-                        polymer=state_obj.customer.polymer_needed,
-                        brand=state_obj.customer.brand_preferred,
-                        grade=state_obj.customer.grade_needed,
-                        location=state_obj.customer.factory_location,
-                        quantity_needed=state_obj.customer.quantity_needed,
-                    )
-                    # stage advancement is now handled inside orchestrator.py:process_message
-                    # so we don't hardcode it here anymore.
-                    return state_obj, system_instruction_inner, catalog_inner
-
-            state, system_instruction, catalog = await asyncio.get_running_loop().run_in_executor(None, _load_context)
-
-            # ── Audio playback queue (in-order) ───────────────────────────────
-            # Producer fills it with (audio_bytes) as TTS completes per sentence.
-            # Consumer sends them to Tata in order.
+            # ── Multi-Agent LangGraph Pipeline ────────────────────────────────
+            # Audio playback queue (in-order): sentences → TTS → Tata
             audio_queue: asyncio.Queue = asyncio.Queue()
-            SENTINEL = None  # signals end of stream
+            SENTINEL = None
 
             sentence_id_counter = 0
-            all_sentences = []   # collect for full ai_response reconstruction
-            final_result = {}    # will hold the parsed JSON from LLM
+            all_sentences = []
+            should_end_call = False
 
             async def _producer():
-                """Stream sentences from LLM → fire TTS per sentence → enqueue audio."""
-                nonlocal final_result, sentence_id_counter
-                async for sentence, result_dict in stream_ai_response_sentences(
-                    transcript, state, system_instruction, catalog
+                """Stream sentences from multi-agent graph → TTS → audio queue."""
+                nonlocal sentence_id_counter, should_end_call
+
+                async for sentence, is_final in multi_orch.stream_response_sentences(
+                    call_id, transcript, caller_phone, current_language
                 ):
-                    if result_dict is not None:
-                        # Last yield from generator — contains parsed JSON
-                        final_result = result_dict
+                    if is_final:
+                        should_end_call = sentence if isinstance(sentence, bool) else is_final
                         break
 
-                    # Only respect barge-in if this is NOT a goodbye/end-call turn
-                    # (call_completed is unknown at this point, so check interruption here
-                    #  only when we haven't yet seen a call_completed hint in the response)
                     if interruption_event.is_set():
                         logger.info("[STREAM] Producer interrupted by user. Stopping.")
                         break
@@ -267,13 +264,28 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     sentence_id_counter += 1
                     s_id = sentence_id_counter
-                    # Safety: skip sentences that are just JSON symbols or whitespace
+
+                    # Safety: skip non-speech fragments
                     if not re.search(r'[a-zA-Z\u0900-\u097F\u0A80-\u0AFF]', sentence):
-                        logger.warning(f"[STREAM] Skipping non-speech sentence fragment: {sentence}")
+                        logger.warning(f"[STREAM] Skipping non-speech fragment: {sentence}")
                         continue
+
+                    # Conversational rhythm: cap at 4 sentences per turn
+                    if sentence_id_counter > 4:
+                        logger.info("[STREAM] Rhythm: Limiting to 4 sentences.")
+                        break
 
                     all_sentences.append(sentence)
                     logger.info(f"[STREAM] Queueing Sentence #{s_id}: {sentence}")
+
+                    try:
+                        asyncio.create_task(dashboard_manager.broadcast({
+                            "type": "transcript",
+                            "speaker": "agent",
+                            "text": sentence
+                        }))
+                    except Exception:
+                        pass
 
                     async def _run_tts(text_chunk):
                         try:
@@ -282,177 +294,76 @@ async def websocket_endpoint(websocket: WebSocket):
                             logger.error(f"TTS error for chunk '{text_chunk}': {tts_err}")
                             return b""
 
-                    # Fire TTS for this sentence immediately (Conveyor Belt)
-                    if sentence_id_counter > 4:
-                        logger.info("Conversational Rhythm: Limiting response to 4 sentences.")
-                        break
-                        
                     tts_task = asyncio.create_task(_run_tts(sentence))
                     audio_queue.put_nowait((s_id, tts_task))
 
-                audio_queue.put_nowait(SENTINEL)  # signal end
+                audio_queue.put_nowait(SENTINEL)
 
-            total_audio_bytes = 0  # track total for final sleep
+            total_audio_bytes = 0
 
             async def _consumer():
-                """Send all audio chunks to Tata immediately back-to-back."""
+                """Send audio chunks to Tata in order."""
                 nonlocal total_audio_bytes
                 while True:
-                    # Only flush & stop on barge-in if this is NOT a call_completed turn.
-                    # If call_completed, drain everything so agent's goodbye plays fully.
-                    is_completing = final_result and final_result.get("call_completed")
-                    if interruption_event.is_set() and not is_completing:
-                        # Clear remaining queue items
+                    if interruption_event.is_set() and not should_end_call:
                         while not audio_queue.empty():
                             try:
                                 audio_queue.get_nowait()
-                            except:
+                            except Exception:
                                 break
-                        logger.info("[STREAM] Consumer interrupted. Flushing audio queue.")
+                        logger.info("[STREAM] Consumer interrupted.")
                         break
 
                     item = await audio_queue.get()
                     if item is SENTINEL:
                         break
-                    
+
                     s_id, tts_task = item
-                    # Await the TTS task
                     audio_chunk = await tts_task
-                    
-                    if interruption_event.is_set() and not is_completing:
-                        # Second check after await
+
+                    if interruption_event.is_set() and not should_end_call:
                         break
 
                     if audio_chunk:
                         total_audio_bytes += len(audio_chunk)
-                        chunk_b64 = base64.b64encode(audio_chunk).decode('utf-8')
+                        chunk_b64 = base64.b64encode(audio_chunk).decode("utf-8")
                         msg = json.dumps({
                             "event": "media",
                             "streamSid": stream_sid,
-                            "media": {"payload": chunk_b64}
+                            "media": {"payload": chunk_b64},
                         })
                         try:
                             await websocket.send_text(msg)
                             logger.info(f"[STREAM] Playing Sentence #{s_id} ({len(audio_chunk)} bytes)")
                         except Exception as send_err:
-                            logger.error(f"Failed to send audio chunk: {send_err}")
+                            logger.error(f"[STREAM] Failed to send audio: {send_err}")
 
-
-            # Run producer and consumer concurrently
             await asyncio.gather(_producer(), _consumer())
 
-            # ── Reconstruct full ai_response & update state (in executor) ─────
-            full_ai_response = " ".join(all_sentences) or final_result.get("ai_response", "")
-            logger.info(f"[STREAM] Full AI Response Reconstructed: {full_ai_response}")
-            if final_result:
-                logger.info(f"[STREAM] Final AI Result Dict: {json.dumps(final_result, ensure_ascii=False)}")
-            
-            # MANDATORY FALLBACK: If no sentences were generated (timeout/refusal), Mohini must speak.
-            if not all_sentences:
+            # ── Fallback: if LangGraph returned nothing, speak a filler ────────
+            full_ai_response = " ".join(all_sentences)
+            if not full_ai_response:
                 fallback_msg = "Ji, thoda repeat karein please? Network slow lag raha hai."
-                logger.warning(f"[STREAM] LLM returned empty response. Triggering fallback: '{fallback_msg}'")
+                logger.warning(f"[STREAM] Empty response. Fallback: '{fallback_msg}'")
                 audio_chunk = await voice_service.text_to_speech(fallback_msg, language_code=current_language)
                 if audio_chunk:
-                    chunk_b64 = base64.b64encode(audio_chunk).decode('utf-8')
+                    chunk_b64 = base64.b64encode(audio_chunk).decode("utf-8")
                     await websocket.send_text(json.dumps({
                         "event": "media", "streamSid": stream_sid,
-                        "media": {"payload": chunk_b64}
+                        "media": {"payload": chunk_b64},
                     }))
-                full_ai_response = fallback_msg
 
-            if not final_result:
-                final_result = {"ai_response": full_ai_response}
-            elif not final_result.get("ai_response"):
-                final_result["ai_response"] = full_ai_response
+            logger.info(f"[STREAM] Full Response: {full_ai_response[:120]}")
 
-            def _update_state():
-                with SessionLocal() as db:
-                    orch = Orchestrator(db)
-                    # Re-use orchestrator's state-update logic by calling process_message
-                    # BUT we already have the AI result — so we patch it directly.
-                    state_fresh = orch._load_state(user_id)
-                    from app.services.language_handler import LanguageHandler
-                    try:
-                        english_text = LanguageHandler.normalize_text(transcript)
-                    except Exception:
-                        english_text = transcript
-                    # Apply extracted customer fields
-                    c = state_fresh.customer
-                    if final_result.get("customer_name")   and not c.name:
-                        c.name             = str(final_result["customer_name"])
-                    if final_result.get("customer_type")   and not c.customer_type:
-                        raw_t = str(final_result["customer_type"]).lower()
-                        c.customer_type = "manufacturer" if "manuf" in raw_t else "trader" if "trad" in raw_t else raw_t
-                    if final_result.get("product_made")    and not c.product_made:
-                        c.product_made     = str(final_result["product_made"])
-                    if final_result.get("polymer_needed")  and not c.polymer_needed:
-                        c.polymer_needed   = str(final_result["polymer_needed"])
-                    # GRADE: explicitly user-stated grade always overrides auto-resolved brand grade.
-                    # Do NOT use "if not c.grade_needed" here — that blocks user saying SG-5 after
-                    # brand resolver pre-filled K-67. Only skip if grade matches brand-resolver value.
-                    llm_grade = final_result.get("grade_needed")
-                    if llm_grade:
-                        c.grade_needed = str(llm_grade)
-                    if final_result.get("brand_preferred") and not c.brand_preferred:
-                        c.brand_preferred  = str(final_result["brand_preferred"])
-                    if final_result.get("factory_location") and not c.factory_location:
-                        c.factory_location = str(final_result["factory_location"])
-                    if final_result.get("quantity_needed") and not c.quantity_needed:
-                        c.quantity_needed = str(final_result["quantity_needed"])
-
-                    # Brand → Grade auto-resolution (FALLBACK ONLY)
-                    # Only fires when brand is known but user never explicitly stated a grade.
-                    # Once a grade is user-confirmed (set above), this will not overwrite it.
-                    from app.services.brand_resolver import resolve_grade
-                    if c.polymer_needed and c.brand_preferred and not c.grade_needed:
-                        resolved = resolve_grade(db, c.polymer_needed, c.brand_preferred)
-                        if resolved:
-                            logger.info(f"[BrandResolver] Auto-filling grade from brand: {resolved}")
-                            c.grade_needed = resolved
-
-                    # Role
-                    if c.customer_type and not state_fresh.role:
-                        state_fresh.role = "buyer" if c.customer_type == "manufacturer" else "seller"
-
-                    # Auto-infer intent from customer_type so it's never stuck at null
-                    current_intent = final_result.get("intent")
-                    if current_intent:
-                        state_fresh.role = current_intent  # store intent via role mapping too
-                    elif c.customer_type == "manufacturer":
-                        final_result["intent"] = "buy"
-                    elif c.customer_type == "trader":
-                        final_result["intent"] = "sell"
-
-                    state_fresh.customer = c
-
-                    # Lead upsert
-                    if c.name or c.factory_location:
-                        orch._upsert_lead(state_fresh, caller_phone)
-
-                    # Advance stage
-                    from app.services.state import ConversationStage
-                    from app.services.orchestrator import _next_stage
-                    if final_result.get("advance_stage") and state_fresh.stage != ConversationStage.COMPLETED:
-                        if state_fresh.stage == ConversationStage.QUALIFICATION:
-                            if all([c.product_made, c.polymer_needed, c.grade_needed, c.factory_location, c.quantity_needed]):
-                                state_fresh.stage = _next_stage(state_fresh.stage)
-                        else:
-                            state_fresh.stage = _next_stage(state_fresh.stage)
-
-                    if state_fresh.stage == ConversationStage.COMPLETED or final_result.get("call_completed"):
-                        state_fresh.should_end_call = True
-
-                    state_fresh.add_turn(english_text, full_ai_response)
-                    orch._save_state(user_id, state_fresh)
-                    return state_fresh.should_end_call
-
-            should_end_call = await loop.run_in_executor(None, _update_state)
-
-            # Optional small trailing gap
-            await asyncio.sleep(0.4)
+            # Wait for TTS audio to finish playing on Tata's side
+            # mu-law 8kHz = 8000 bytes/sec, so duration ≈ bytes / 8000
+            audio_play_secs = max(total_audio_bytes / 8000.0, 0.5)
+            await asyncio.sleep(audio_play_secs + 0.5)  # audio duration + small buffer
 
             if should_end_call:
-                logger.info("Call completed — agent ending call.")
+                logger.info(f"Call completed — waiting {audio_play_secs + 2:.1f}s for final audio to play.")
+                # Extra grace period for the goodbye sentence to fully play
+                await asyncio.sleep(2.0)
                 await websocket.send_text(json.dumps({"event": "stop", "streamSid": stream_sid}))
                 await asyncio.sleep(0.5)
                 await websocket.close()
@@ -481,46 +392,45 @@ async def websocket_endpoint(websocket: WebSocket):
                     
                     if event_type == "start":
                         stream_sid = json_data.get("start", {}).get("streamSid")
-                        metadata = json_data.get("start", {})
-                        caller_phone = metadata.get("from", "Unknown")
-                        logger.info(f"Stream started: {json_data}")
-                        logger.info(f"Caller Phone: {caller_phone}")
+                        metadata   = json_data.get("start", {})
+                        caller_phone = metadata.get("from", "")
+                        call_id = stream_sid or call_id  # prefer Tata stream_sid as call_id
+                        logger.info(f"Stream started: sid={stream_sid} phone={caller_phone}")
 
-                        # Find Lead to set User ID (Sync DB call in thread)
-                        if caller_phone and caller_phone != "Unknown":
+                        # Find Lead for legacy user_id mapping
+                        known_caller_name = None
+                        if caller_phone:
                             def get_lead_info(phone):
-                                """Returns (lead_id, known_name) for the caller, or (999, None) if new."""
                                 with SessionLocal() as db:
                                     lead = db.query(Lead).filter(Lead.mobile_no == phone).order_by(Lead.id.desc()).first()
                                     if lead:
-                                        return lead.id, lead.customer_name
-                                    return 999, None
+                                        return lead.customer_name
+                                    return None
+                            known_caller_name = await loop.run_in_executor(
+                                None, get_lead_info, caller_phone
+                            )
+                            logger.info(f"Known name: {known_caller_name}")
 
-                            user_id, known_caller_name = await loop.run_in_executor(None, get_lead_info, caller_phone)
-                            logger.info(f"Mapped to User ID: {user_id} | Known name: {known_caller_name}")
-                        else:
-                            known_caller_name = None
+                        # ── Start multi-agent session ─────────────────────────
+                        def _start_session():
+                            return multi_orch.start_call(
+                                call_id=call_id,
+                                phone_number=caller_phone,
+                                known_name=known_caller_name,
+                            )
+                        greeting_text = await loop.run_in_executor(None, _start_session)
+                        logger.info(f"[MultiAgent] Session started: call_id={call_id}")
 
-                        # Reset state for this call
-                        await loop.run_in_executor(None, reset_state_sync, user_id)
-                        logger.info(f"Reset state for User ID: {user_id}")
+                        # ── Pre-fetch buyer details in parallel with TTS ──────
+                        # This saves 5-12 seconds on the first user message by
+                        # fetching buyer history WHILE the greeting plays.
+                        buyer_details_task = None
+                        if caller_phone:
+                            from app.services.bsb_api_client import fetch_buyer_details
+                            buyer_details_task = asyncio.create_task(
+                                fetch_buyer_details(caller_phone)
+                            )
 
-                        # Pre-populate known caller name so AI skips name-collection
-                        if known_caller_name:
-                            def inject_name(uid, name):
-                                with SessionLocal() as db:
-                                    orch = Orchestrator(db)
-                                    state = orch._load_state(uid)
-                                    state.customer.name = name
-                                    orch._save_state(uid, state)
-                            await loop.run_in_executor(None, inject_name, user_id, known_caller_name)
-                            logger.info(f"Pre-populated caller name: {known_caller_name}")
-                        
-                        # Initial Greeting
-                        if known_caller_name:
-                            greeting_text = f"Ji Namaste {known_caller_name} ji! Main Mohini hun, BSB Polymer se baat kar rahi hun. Bataye main kya help kar sakti hun?"
-                        else:
-                            greeting_text = "Ji Namaste! Main Mohini hun, BSB Polymer se baat kar rahi hun. Kya main aapka shubh naam jaan sakti hun?"
                         call_state = CallStatus.SPEAKING
                         last_tts_start_time = asyncio.get_running_loop().time()
                         greeting_audio = await voice_service.text_to_speech(greeting_text)
@@ -530,15 +440,34 @@ async def websocket_endpoint(websocket: WebSocket):
                                 "event": "media", "streamSid": stream_sid, "media": {"payload": greeting_b64}
                             }))
                             logger.info(f"[GREETING] Sent greeting audio to Tata ({len(greeting_audio)} bytes mu-law). Text: '{greeting_text}'")
+                            
+                            # Suppress VAD for the duration of the greeting
+                            # mu-law 8kHz = 8000 bytes/sec
+                            greeting_duration = len(greeting_audio) / 8000.0
+                            vad_suppressed_until = asyncio.get_running_loop().time() + greeting_duration + 0.5
+                            logger.info(f"[GREETING] VAD suppressed for {greeting_duration + 0.5:.1f}s")
+                            
+                            try:
+                                asyncio.create_task(dashboard_manager.broadcast({
+                                    "type": "transcript",
+                                    "speaker": "agent",
+                                    "text": greeting_text
+                                }))
+                            except Exception:
+                                pass
                         else:
                             logger.error("[GREETING] TTS returned empty audio for greeting! User will hear silence.")
-                        call_state = CallStatus.LISTENING
 
-                        # ── LLM Warm-Up ──────────────────────────────────────────
-                        # Fire a background Groq ping while the user listens to the
-                        # greeting. This warms the connection so the FIRST real
-                        # user query responds ~300-800ms faster.
-                        asyncio.create_task(warmup_llm())
+                        # ── Collect pre-fetched buyer details ─────────────────
+                        if buyer_details_task:
+                            try:
+                                buyer_details = await asyncio.wait_for(buyer_details_task, timeout=10.0)
+                                multi_orch.set_prefetched_buyer_details(call_id, buyer_details)
+                                logger.info(f"[PREFETCH] Buyer details cached: exists={buyer_details.get('exists')}")
+                            except Exception as e:
+                                logger.warning(f"[PREFETCH] Buyer details fetch failed: {e}")
+
+                        call_state = CallStatus.LISTENING
 
                     elif event_type == "media":
                         payload = json_data.get("media", {}).get("payload")
@@ -567,6 +496,10 @@ async def websocket_endpoint(websocket: WebSocket):
                         if call_state != CallStatus.LISTENING:
                             continue
                         
+                        # Suppress VAD during greeting/TTS echo playback
+                        if asyncio.get_running_loop().time() < vad_suppressed_until:
+                            continue
+                        
                         payload = json_data.get("media", {}).get("payload")
                         if payload:
                             chunk = base64.b64decode(payload)
@@ -582,17 +515,19 @@ async def websocket_endpoint(websocket: WebSocket):
                                     last_voice_time = asyncio.get_running_loop().time()
                                     
                                     if not is_speech_active:
-                                        # Start of new phrase: flush silence buffer as pre-roll
                                         is_speech_active = True
-                                        logger.info(f"Voice started (RMS: {rms})")
+                                        logger.info(f"Voice started (RMS: {rms}, threshold: {VOICE_THRESHOLD})")
                                         if silence_buffer:
                                             for s_chunk in silence_buffer:
-                                                audio_buffer.extend(s_chunk)
+                                                audio_buffer.extend(s_chunk)  # pre-roll (mulaw bytes)
                                             silence_buffer.clear()
                                     
+                                    # Store mulaw bytes (not pcm) — sarvam_service converts them
                                     audio_buffer.extend(chunk)
-                                
                                 else:
+                                    # Log RMS occasionally to help tune threshold
+                                    if len(audio_buffer) == 0:
+                                        logger.debug(f"Silence RMS: {rms} (need >{VOICE_THRESHOLD} for speech)")
                                     # Silence/Noise
                                     if is_speech_active:
                                         # We were in speech, now entering silence

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # ── BSB Voice Agent ─────────────────────────────────────────────────────────
+  voice-agent:
+    build: .
+    container_name: bsb_voice_agent
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./conversations.db:/app/conversations.db
+      - ./conversations_graph.db:/app/conversations_graph.db
+      - ./.env:/app/.env
+    environment:
+      - TZ=Asia/Kolkata
+      # Lower VAD threshold for telecom audio (can tune without rebuild)
+      - VOICE_THRESHOLD=40
+      - CALL_SILENCE_MS=700
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Ngrok Tunnel ─────────────────────────────────────────────────────────────
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: bsb_ngrok
+    restart: always
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "voice-agent:8000"
+    depends_on:
+      voice-agent:
+        condition: service_healthy

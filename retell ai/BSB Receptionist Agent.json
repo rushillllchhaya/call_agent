@@ -1,0 +1,836 @@
+{
+  "agent_id": "",
+  "channel": "voice",
+  "last_modification_timestamp": 1777977863502,
+  "agent_name": "BSB Receptionist Agent",
+  "version_description": "Full flow to AI Agents while order status pending",
+  "response_engine": {
+    "type": "conversation-flow",
+    "version": 6,
+    "conversation_flow_id": "conversation_flow_4fa701686bec"
+  },
+  "language": "en-US",
+  "data_storage_setting": "everything",
+  "opt_in_signed_url": false,
+  "version": 6,
+  "is_published": false,
+  "version_title": "Full Flow",
+  "post_call_analysis_model": "gpt-4.1",
+  "pii_config": {
+    "mode": "post_call",
+    "categories": []
+  },
+  "handbook_config": {
+    "default_personality": true,
+    "speech_normalization": false,
+    "ai_disclosure": true
+  },
+  "analysis_successful_prompt": "Evaluate whether the agent had a successful call with the user. For a successful call, the agent should have a complete conversation with user, finished the task, and have not ran into technical issues, or caused user frustration. Besides, the agent was not blocked by a call screen or encountered voicemail.",
+  "analysis_summary_prompt": "Write a 3-5 sentence summary of the call based on the call transcript. Should capture the important information and actions taken during the call.",
+  "analysis_user_sentiment_prompt": "Evaluate user's sentiment, mood and satisfaction level.",
+  "post_call_analysis_data": [
+    {
+      "name": "call_summary",
+      "description": "Write a 3-5 sentence summary of the call based on the call transcript. Should capture the important information and actions taken during the call.",
+      "type": "system-presets",
+      "required": true
+    },
+    {
+      "type": "system-presets",
+      "name": "call_successful",
+      "description": "Evaluate whether the agent had a successful call with the user. For a successful call, the agent should have a complete conversation with user, finished the task, and have not ran into technical issues, or caused user frustration. Besides, the agent was not blocked by a call screen or encountered voicemail."
+    },
+    {
+      "type": "system-presets",
+      "name": "user_sentiment",
+      "description": "Evaluate user's sentiment, mood and satisfaction level."
+    }
+  ],
+  "voice_id": "openai-Monika",
+  "reminder_trigger_ms": 10000,
+  "reminder_max_count": 1,
+  "max_call_duration_ms": 3600000,
+  "interruption_sensitivity": 1,
+  "normalize_for_speech": false,
+  "allow_user_dtmf": true,
+  "user_dtmf_options": {},
+  "conversationFlow": {
+    "conversation_flow_id": "conversation_flow_4fa701686bec",
+    "version": 6,
+    "global_prompt": "You are Mohini, a warm, empathetic, and professional female receptionist at BSB Polymers. You help customers with Polymer Rates, Logistics, and Trade Finance.\n\n\nIdentity & Tone\nSpeak in a friendly, natural mix of Hindi and English (Hinglish) when the user does so; match their language style exactly\nIf the user speaks only in English, respond fully in English. If the user mixes Hindi and English, mirror that naturally. Never switch languages mid-response unless the user does first\nNever assume the user's name, company, or location — always ask if unknown\nDo not pull or guess details from previous sessions unless explicitly confirmed by the user in the current conversation\n\n\nGreeting\nStart every call by greeting the user as Mohini from BSB Polymers and asking how you can help — choose from Polymer Rates, Logistics, or Trade Finance\nIf the user's name is already known from this session, greet them by name\nNever assume a returning user without confirmation in the current call\nNew User Flow Ask for details in this order, one at a time, conversationally:\n\nName\nCompany\nLocation\nContact number\n\n\nConversation Rules\nAsk one question at a time — never stack multiple questions\nIf the user interrupts or trails off mid-sentence, stop immediately and address what they said\nIf the user's message is incomplete, unclear, or they seem to be correcting themselves, wait and gently ask: \"Kya aap dobara bata sakte hain?\" — never guess what they meant\nNever correct a user's location by saying \"you said X\" if it was actually you who assumed X — own the mistake politely\n\n\nQuantity Clarification\nNever assume units for quantity. If the user gives a number without a unit (kg, MT, bags), always ask: \"Yeh quantity kis unit mein hai — kilogram, metric ton, ya bags?\"\nPhone Number Handling\nWhen collecting a phone number, always read it back digit-by-digit and ask the user to confirm before saving\nIf the user corrects any detail (name, number, location, quantity), acknowledge the correction warmly, update it, read the corrected value back, and confirm before moving on. Never silently overwrite without confirming\n\n\nOrder Confirmation\nWhen summarizing an order, always present it clearly and ask the user to confirm before proceeding\nBefore ending any interaction involving an order or logistics request, always read back the complete order summary — material, grade, quantity, pickup location, delivery location, delivery date, and contact number — and ask the user to confirm every detail is correct before closing\n\n\nCurrency Format\nAlways use the Indian currency system. Use ₹ for rupees and \"paisa\" for decimals — never say \"cents\"\nSay \"baees paisa\" not \"twenty-two cents\", and write ₹82.25 as \"₹82 aur 25 paisa\" if speaking it out\nFor large amounts, always use Indian numbering — lakh and crore, never million or thousand above 99,999\nExample: ₹16,45,000 should be read as \"solah lakh pachchees hazaar\" — not \"one point six million\"\n\n\nFormatting\nAlways use Indian currency format (₹ and paisa, e.g. ₹82.25/kg)\nFor large amounts, use Indian numbering (lakhs, not millions): ₹16,45,000 not ₹1,645,000\n\n\nWhatsApp\nWhen the user asks for a WhatsApp link or to be contacted on WhatsApp, immediately trigger the whatsapp-template-link function. Do not describe or explain what you are doing — just trigger it and confirm to the user that the link has been sent\n\n\nOut-of-Scope Handling\nIf the user asks about something outside Polymer Rates, Logistics, or Trade Finance, politely redirect them: \"Yeh meri expertise se bahar hai, lekin main aapki Polymer Rates, Logistics, ya Trade Finance mein zaroor madad kar sakti hoon\"",
+    "nodes": [
+      {
+        "instruction": {
+          "type": "static_text",
+          "text": "Hello I am Mohini from BSB Polymers! Aaj apko kis chiz ke baare mein help chahiye : Polymer Rates, Logistics Service or Trade Finance?"
+        },
+        "name": "Welcome Node",
+        "edges": [
+          {
+            "destination_node_id": "node-1777528916557",
+            "id": "edge-1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs service for Polymer rates "
+            }
+          },
+          {
+            "destination_node_id": "branch-1777533170487-0",
+            "id": "edge-1777527821076-0fc1tog1n",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs service of Logistics"
+            }
+          },
+          {
+            "destination_node_id": "branch-1777533447533-0",
+            "id": "edge-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs Trade Finance Service"
+            }
+          },
+          {
+            "id": "edge-1777527872531-nkbj87x7r",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User needs to check the order Status"
+            }
+          }
+        ],
+        "start_speaker": "agent",
+        "id": "start-node-1777479738119",
+        "type": "conversation",
+        "display_position": {
+          "x": 654,
+          "y": 366
+        }
+      },
+      {
+        "name": "Logic Split",
+        "edges": [
+          {
+            "destination_node_id": "node-1777530128278",
+            "id": "edge-1777528928060-dbx3ufiyy",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the person is known to us e.i, we have its all the details and his previous order "
+            }
+          }
+        ],
+        "id": "node-1777528916557",
+        "else_edge": {
+          "destination_node_id": "subagent-1777528953420-0",
+          "id": "edge-1777528916557-e8yjowtl0",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "type": "branch",
+        "display_position": {
+          "x": 1038,
+          "y": 246
+        }
+      },
+      {
+        "instruction": {
+          "type": "prompt",
+          "text": "Step 1: What is your {{Name}}?\nStep 2: Are you a trader or Manufacturer( {{role}}?\nSetp 3: What is your {{Comapny Name}}?\nStep 4: What is your {{Location}}\nStep 5: After all the details transfer the agent to by saying \" I am tranfering the call to the Sales Agent now"
+        },
+        "name": "Sales Subagent",
+        "edges": [
+          {
+            "destination_node_id": "node-1777537661290",
+            "id": "subagent-1777528953420-0-edge-1777528953420-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Transfer failed"
+            }
+          }
+        ],
+        "id": "subagent-1777528953420-0",
+        "type": "subagent",
+        "display_position": {
+          "x": 1422,
+          "y": 630
+        },
+        "tools": [
+          {
+            "agent_id": "agent_dabb80c5a284061ff25e5d3a0e",
+            "webhook_setting": "both_agents",
+            "speak_after_execution": true,
+            "name": "agent_transfer",
+            "description": "Transfer to a Sales Agent for the user to make price inquiry and order confirmation",
+            "keep_current_voice": true,
+            "post_call_analysis_setting": "both_agents",
+            "type": "agent_swap",
+            "keep_current_language": true
+          }
+        ]
+      },
+      {
+        "agent_id": "agent_dabb80c5a284061ff25e5d3a0e",
+        "edge": {
+          "destination_node_id": "node-1777537661290",
+          "id": "edge-1777530128278-lb3k6voql",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Agent Transfer Node",
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "node-1777530128278",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1422,
+          "y": 270
+        }
+      },
+      {
+        "tool_id": "tool-1777531932017",
+        "else_edge": {
+          "destination_node_id": "start-node-1777479738119",
+          "id": "node-1777531939608-else-edge",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Caller-details-api",
+        "edges": [
+          {
+            "destination_node_id": "start-node-1777479738119",
+            "id": "edge-1777532030350-z1trehkd2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the number give by the user results information"
+            }
+          }
+        ],
+        "enable_typing_sound": false,
+        "id": "node-1777531939608",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 270,
+          "y": 534
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Sales Endcall",
+        "id": "node-1777532844770",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2574,
+          "y": 174
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently unable to get you contacted with sales person? The sales person will call you in mean time. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "name": "Logic Split (Logistics)",
+        "edges": [
+          {
+            "destination_node_id": "agent_swap-1777533200863-1",
+            "id": "branch-1777533170487-0-edge-1777533170487-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the person is known to us e.i, we have its all the details and his previous order "
+            }
+          }
+        ],
+        "id": "branch-1777533170487-0",
+        "else_edge": {
+          "destination_node_id": "subagent-1777533200863-0",
+          "id": "branch-1777533170487-0-else-edge-1777533170487",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "type": "branch",
+        "display_position": {
+          "x": 1038,
+          "y": 1206
+        }
+      },
+      {
+        "instruction": {
+          "type": "prompt",
+          "text": "Step 1: What is your {{Name}}?\nStep 2: Are you a trader or Manufacturer( {{role}}?\nSetp 3: What is your {{Comapny Name}}?\nStep 4: What is your {{Location}}\nStep 5: After all the details transfer the agent to by saying \" I am tranfering the call to the Sales Agent now"
+        },
+        "name": "Logistics Subagent ",
+        "edges": [
+          {
+            "destination_node_id": "conversation-1777538186605-2",
+            "id": "subagent-1777533200863-0-edges-1777533200863-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Transfer failed"
+            }
+          }
+        ],
+        "id": "subagent-1777533200863-0",
+        "type": "subagent",
+        "display_position": {
+          "x": 1422,
+          "y": 1542
+        },
+        "tools": [
+          {
+            "agent_id": "agent_62b5d1a16969f07f860d93614a",
+            "webhook_setting": "both_agents",
+            "speak_after_execution": true,
+            "name": "agent_transfer",
+            "description": "Transfer to a Sales Agent for the user to make price inquiry and order confirmation",
+            "keep_current_voice": true,
+            "post_call_analysis_setting": "both_agents",
+            "type": "agent_swap",
+            "keep_current_language": true
+          }
+        ]
+      },
+      {
+        "agent_id": "agent_62b5d1a16969f07f860d93614a",
+        "edge": {
+          "destination_node_id": "conversation-1777538186605-2",
+          "id": "agent_swap-1777533200863-1-edge-1777533200863-1",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Agent Transfer - Logistics",
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "agent_swap-1777533200863-1",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1446,
+          "y": 1182
+        }
+      },
+      {
+        "name": "Logic Split (Trade Finance)",
+        "edges": [
+          {
+            "destination_node_id": "agent_swap-1777533447533-2",
+            "id": "branch-1777533447533-0-edges-1777533447533-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "If the person is known to us e.i, we have its all the details and his previous order "
+            }
+          }
+        ],
+        "id": "branch-1777533447533-0",
+        "else_edge": {
+          "destination_node_id": "subagent-1777533447533-1",
+          "id": "branch-1777533447533-0-else_edge-1777533447533-1",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "type": "branch",
+        "display_position": {
+          "x": 1038,
+          "y": 2166
+        }
+      },
+      {
+        "instruction": {
+          "type": "prompt",
+          "text": "Step 1: What is your {{Name}}?\nStep 2: Are you a trader or Manufacturer( {{role}}?\nSetp 3: What is your {{Comapny Name}}?\nStep 4: What is your {{Location}}\nStep 5: After all the details transfer the agent to by saying \" I am tranfering the call to the Sales Agent now"
+        },
+        "name": "Trade Finance Subagent ",
+        "edges": [
+          {
+            "destination_node_id": "conversation-1777538322092-1",
+            "id": "subagent-1777533447533-1-edges-1777533447533-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Transfer failed"
+            }
+          }
+        ],
+        "id": "subagent-1777533447533-1",
+        "type": "subagent",
+        "display_position": {
+          "x": 1446,
+          "y": 2478
+        },
+        "tools": [
+          {
+            "agent_id": "agent_df0d06a02ba8916d70a35268f9",
+            "webhook_setting": "both_agents",
+            "speak_after_execution": true,
+            "name": "agent_transfer",
+            "description": "Transfer to a Sales Agent for the user to make price inquiry and order confirmation",
+            "keep_current_voice": true,
+            "post_call_analysis_setting": "both_agents",
+            "type": "agent_swap",
+            "keep_current_language": true
+          }
+        ]
+      },
+      {
+        "agent_id": "agent_df0d06a02ba8916d70a35268f9",
+        "edge": {
+          "destination_node_id": "conversation-1777538322092-1",
+          "id": "agent_swap-1777533447533-2-edge-1777533447533-3",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Transfer failed"
+          }
+        },
+        "webhook_setting": "both_agents",
+        "name": "Agent Transfer - Trade Finance",
+        "post_call_analysis_setting": "both_agents",
+        "keep_current_voice": true,
+        "id": "agent_swap-1777533447533-2",
+        "type": "agent_swap",
+        "keep_current_language": true,
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1446,
+          "y": 2142
+        }
+      },
+      {
+        "name": "Trade Finance Endcall",
+        "id": "end-1777533447533-3",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2766,
+          "y": 1998
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently unable to get you contacted with our finance person! The sales person will call you in mean time. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "tool_id": "tool-1777537611432",
+        "else_edge": {
+          "destination_node_id": "end-1777538079270-0",
+          "id": "node-1777537614785-else-edge",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Whatsapp-template-link",
+        "edges": [
+          {
+            "destination_node_id": "node-1777532844770",
+            "id": "edge-1777538027351-3sy4rh0ms",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After Sucessful Api call close the conversation with the ending line"
+            }
+          }
+        ],
+        "enable_typing_sound": false,
+        "id": "node-1777537614785",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 2214,
+          "y": 198
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "destination_node_id": "node-1777537614785",
+            "id": "edge-1777537661290-rwxfh32wx",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User agress to the whatsapp template"
+            }
+          }
+        ],
+        "id": "node-1777537661290",
+        "type": "conversation",
+        "display_position": {
+          "x": 1806,
+          "y": 198
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "\"Mohini, call the Whatsapp-Template-Link function using their {{phone_number}}.\nThe video link : https://backend.bsbinfotrade.com/ai_static/aivideo2.mp4\nThe template "
+        }
+      },
+      {
+        "name": "Endcall",
+        "id": "end-1777538079270-0",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2574,
+          "y": 390
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently having techincals deficulties. We will ger back to you. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "name": "Logistics Endcall",
+        "id": "end-1777538186605-0",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2694,
+          "y": 1110
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently unable to get you contacted with logistic person! The sales person will call you in mean time. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "tool_id": "tool-1777537611432",
+        "else_edge": {
+          "destination_node_id": "end-1777538186605-3",
+          "id": "function-1777538186605-1-else_edge-1777538186605-1",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Whatsapp-template-link",
+        "edges": [
+          {
+            "destination_node_id": "end-1777538186605-0",
+            "id": "function-1777538186605-1-edges-1777538186605-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After Sucessful Api call close the conversation with the ending line"
+            }
+          }
+        ],
+        "enable_typing_sound": false,
+        "id": "function-1777538186605-1",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 2334,
+          "y": 1134
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Conversation (Copy)",
+        "edges": [
+          {
+            "destination_node_id": "function-1777538186605-1",
+            "id": "conversation-1777538186605-2-edges-1777538186605-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User agress to the whatsapp template"
+            }
+          }
+        ],
+        "id": "conversation-1777538186605-2",
+        "type": "conversation",
+        "display_position": {
+          "x": 1926,
+          "y": 1134
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "\"Mohini, call the Whatsapp-Template-Link function using their {{phone_number}}.\nThe video link : https://backend.bsbinfotrade.com/ai_static/aivideo2.mp4\nThe template "
+        }
+      },
+      {
+        "name": "Endcall",
+        "id": "end-1777538186605-3",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2694,
+          "y": 1350
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently having techincals deficulties. We will ger back to you. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "tool_id": "tool-1777537611432",
+        "else_edge": {
+          "destination_node_id": "end-1777538386724-0",
+          "id": "function-1777538322092-0-else-edge-1777538322092",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Whatsapp-template-link (Copy) (Copy)",
+        "edges": [
+          {
+            "destination_node_id": "end-1777533447533-3",
+            "id": "function-1777538322092-0-edge-1777538322092-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After Sucessful Api call close the conversation with the ending line"
+            }
+          }
+        ],
+        "enable_typing_sound": false,
+        "id": "function-1777538322092-0",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 2334,
+          "y": 2022
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Conversation (Copy) (Copy)",
+        "edges": [
+          {
+            "destination_node_id": "function-1777538322092-0",
+            "id": "conversation-1777538322092-1-edges-1777538322092-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User agress to the whatsapp template"
+            }
+          }
+        ],
+        "id": "conversation-1777538322092-1",
+        "type": "conversation",
+        "display_position": {
+          "x": 1950,
+          "y": 2046
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "\"Mohini, call the Whatsapp-Template-Link function using their {{phone_number}}.\nThe video link : https://backend.bsbinfotrade.com/ai_static/aivideo2.mp4\nThe template "
+        }
+      },
+      {
+        "name": "Endcall (Copy)",
+        "id": "end-1777538386724-0",
+        "type": "end",
+        "speak_during_execution": true,
+        "display_position": {
+          "x": 2766,
+          "y": 2334
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Sorry I am currently having techincals deficulties. We will ger back to you. THANK YOU, Have a Great day {{Name}}ji!"
+        }
+      },
+      {
+        "tool_id": "tool-1777537611432",
+        "else_edge": {
+          "id": "function-1777976248194-0-else-edge-1777976248194",
+          "transition_condition": {
+            "type": "prompt",
+            "prompt": "Else"
+          }
+        },
+        "name": "Whatsapp-template-link",
+        "edges": [
+          {
+            "id": "function-1777976248194-0-edge-1777976248194-0",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "After Sucessful Api call close the conversation with the ending line"
+            }
+          }
+        ],
+        "global_node_setting": {
+          "condition": "Whenever the user wants the whatsapp link for him use this node ",
+          "positive_finetune_examples": [
+            {
+              "transcript": [
+                {
+                  "content": "can u send to the whatsapp link",
+                  "role": "user"
+                },
+                {
+                  "content": "Okay I am sending the app link on your whatsapp now",
+                  "role": "agent"
+                }
+              ]
+            },
+            {
+              "transcript": [
+                {
+                  "content": "send me the link",
+                  "role": "user"
+                },
+                {
+                  "content": "i m sending u one right now",
+                  "role": "agent"
+                }
+              ]
+            }
+          ],
+          "negative_finetune_examples": []
+        },
+        "enable_typing_sound": false,
+        "id": "function-1777976248194-0",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 270,
+          "y": 822
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Conversation",
+        "edges": [
+          {
+            "id": "edge-1777985930645-py8h1l6z7",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Describe the transition condition"
+            }
+          }
+        ],
+        "id": "node-1777985930645",
+        "type": "conversation",
+        "display_position": {
+          "x": 606,
+          "y": 798
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": ""
+        }
+      }
+    ],
+    "start_node_id": "node-1777531939608",
+    "start_speaker": "agent",
+    "tools": [
+      {
+        "headers": {},
+        "parameter_type": "json",
+        "method": "POST",
+        "query_params": {},
+        "description": "This API tells your about the callers (user) is known or unknown so that he can be treated iwth the specific flow.",
+        "enable_typing_sound": false,
+        "type": "custom",
+        "url": "https://backend.bsbinfotrade.com/api/web/get-buyer-lead",
+        "tool_id": "tool-1777531932017",
+        "args_at_root": false,
+        "timeout_ms": 120000,
+        "speak_after_execution": true,
+        "name": "Caller-details-API",
+        "response_variables": {
+          "Company": "data[0].company_name",
+          "Material": "data[0].material",
+          "LastPrice": "data[0].quoted_price",
+          "Exists": "exists",
+          "Name": "data[0].name",
+          "Location": "data[0].location"
+        },
+        "speak_during_execution": false,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "phone_number"
+          ],
+          "properties": {
+            "phone_number": {
+              "type": "string",
+              "const": "6353675876"
+            }
+          }
+        }
+      },
+      {
+        "headers": {
+          "Authorization": "Bearer wm_aNMFbDuiNjBRwpfKSipVVtArsOqbTcqImEgu4PnbCz1aKOREw0N3fkqBSzCr",
+          "Content-Type": "application/json"
+        },
+        "parameter_type": "json",
+        "method": "POST",
+        "query_params": {},
+        "description": "This Api is used to send a whatsapp template link to the users",
+        "enable_typing_sound": false,
+        "type": "custom",
+        "url": "https://whatsapp.bsbinfotrade.com/api/v2/messages/template",
+        "tool_id": "tool-1777537611432",
+        "args_at_root": false,
+        "timeout_ms": 120000,
+        "speak_after_execution": true,
+        "name": "Whatsapp-Template-Link",
+        "response_variables": {},
+        "speak_during_execution": false,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "template_name",
+            "language",
+            "header_video_url",
+            "phone"
+          ],
+          "properties": {
+            "template_name": {
+              "type": "string",
+              "const": "ai_call_buyer_message"
+            },
+            "language": {
+              "type": "string",
+              "const": "en"
+            },
+            "header_video_url": {
+              "type": "string",
+              "const": "https://backend.bsbinfotrade.com/ai_static/aivideo2.mp4"
+            },
+            "phone": {
+              "type": "string",
+              "description": "The 10-digit mobile number. Use exactly the key 'phone'."
+            }
+          }
+        }
+      }
+    ],
+    "model_choice": {
+      "type": "cascading",
+      "model": "gpt-4.1"
+    },
+    "tool_call_strict_mode": true,
+    "knowledge_base_ids": [],
+    "kb_config": {
+      "top_k": 3,
+      "filter_score": 0.6
+    },
+    "begin_tag_display_position": {
+      "x": 78,
+      "y": 78
+    },
+    "notes": [],
+    "is_published": false,
+    "is_transfer_cf": false
+  }
+}

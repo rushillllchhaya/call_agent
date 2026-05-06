@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSB Live Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #080c18;
+            --panel:        rgba(15, 23, 42, 0.85);
+            --border:       rgba(51, 65, 85, 0.45);
+            --text:         #e2e8f0;
+            --muted:        #64748b;
+            --accent:       #3b82f6;
+            --agent-msg:    rgba(29, 78, 216, 0.55);
+            --user-msg:     #1e293b;
+            --ok:           #22c55e;
+            --err:          #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ─────────────────────────────────────────────────────── */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 1.5rem;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            flex-shrink: 0;
+            gap: 1rem;
+        }
+
+        .header-logo {
+            font-size: 1.05rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #active-agent {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            transition: all 0.3s ease;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .api-counter {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        #connection-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            background: #ef444430;
+            color: #ef4444;
+            border: 1px solid #ef444455;
+            transition: all 0.3s ease;
+        }
+        #connection-status.connected {
+            background: #22c55e18;
+            color: #22c55e;
+            border-color: #22c55e44;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────────────── */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+
+        /* ── Panel base ──────────────────────────────────────────────────── */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-head {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .panel-body::-webkit-scrollbar { width: 3px; }
+        .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── Left: Transcript ────────────────────────────────────────────── */
+        .transcript-panel {
+            flex: 2.2;
+        }
+
+        .message {
+            max-width: 85%;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            animation: fadeUp 0.2s ease;
+            padding: 0.6rem 0.9rem;
+        }
+        .message.user  { align-self: flex-end; background: var(--user-msg); border-bottom-right-radius: 3px; }
+        .message.agent { align-self: flex-start; background: var(--agent-msg); border-bottom-left-radius: 3px; }
+
+        .message-sender {
+            display: block;
+            font-size: 0.67rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .agent-sep {
+            align-self: center;
+            font-size: 0.68rem;
+            color: var(--muted);
+            font-style: italic;
+            padding: 0.1rem 0;
+        }
+
+        /* ── Right column ────────────────────────────────────────────────── */
+        .right-col {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* ── Call Summary ────────────────────────────────────────────────── */
+        .summary-panel { flex: 0 0 auto; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+        }
+        .summary-item {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 0.5rem 0.75rem;
+        }
+        .s-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 0.15rem;
+        }
+        .s-value { font-size: 0.82rem; font-weight: 500; color: #e2e8f0; word-break: break-word; }
+        .s-value.empty { color: #334155; font-style: italic; }
+
+        /* ── API Panel ───────────────────────────────────────────────────── */
+        .api-panel { flex: 1; min-height: 0; }
+
+        /* Individual API card */
+        .api-call {
+            background: rgba(8, 12, 24, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            animation: slideDown 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .api-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+        .api-name {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+        .api-icon { font-size: 0.9rem; }
+        .api-right {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .phase-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid;
+        }
+        .status-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 4px;
+        }
+        .status-pill.ok  { background: #22c55e18; color: var(--ok); border: 1px solid #22c55e44; }
+        .status-pill.err { background: #ef444418; color: var(--err); border: 1px solid #ef444444; }
+
+        .api-ts {
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-bottom: 0.45rem;
+        }
+
+        /* Request / Response sections */
+        .api-section { margin-top: 0.45rem; }
+
+        .api-section-title {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .api-section-body {
+            padding: 0.2rem 0;
+            color: var(--text);
+        }
+
+        /* Key-value rows */
+        .kv-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.15rem 0.5rem;
+            align-items: baseline;
+            padding: 0.1rem 0;
+            border-bottom: 1px solid rgba(51,65,85,0.2);
+        }
+        .kv-row:last-child { border-bottom: none; }
+
+        .kv-key {
+            font-weight: 600;
+            color: #93c5fd;
+            min-width: 100px;
+            font-size: 0.72rem;
+        }
+        .kv-sep { color: var(--muted); }
+        .kv-val { color: #e2e8f0; word-break: break-all; }
+        .kv-nested { width: 100%; margin-left: 0.5rem; margin-top: 0.2rem; }
+
+        .arr-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
+        .arr-item {
+            background: rgba(30,41,59,0.5);
+            border-radius: 5px;
+            padding: 0.3rem 0.5rem;
+        }
+
+        /* Value color coding */
+        .val-str  { color: #86efac; }
+        .val-num  { color: #fbbf24; }
+        .val-bool { color: #c084fc; }
+        .val-null { color: #475569; }
+
+        /* ── Animations ──────────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="header-logo">BSB Live Dashboard</span>
+
+        <div class="header-center">
+            <div id="active-agent">Waiting for call...</div>
+        </div>
+
+        <div class="header-right">
+            <span class="api-counter">APIs: <strong id="api-count">0</strong></span>
+            <div id="connection-status">○ Offline</div>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Live Transcript -->
+        <div class="panel transcript-panel">
+            <div class="panel-head">
+                <span>Live Transcript</span>
+            </div>
+            <div class="panel-body" id="transcript-container"></div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-col">
+            <!-- Call Summary -->
+            <div class="panel summary-panel">
+                <div class="panel-head"><span>Call Summary</span></div>
+                <div class="panel-body" style="padding:0.6rem;">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="s-label">Name</div>
+                            <div class="s-value empty" id="summary-name">—</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="s-label">Phone</div>
+                            <div class="s-value empty" id="summary-phone">—</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="s-label">Company</div>
+                            <div class="s-value empty" id="summary-company">—</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="s-label">Location</div>
+                            <div class="s-value empty" id="summary-location">—</div>
+                        </div>
+                        <div class="summary-item" style="grid-column: span 2;">
+                            <div class="s-label">Material Requested</div>
+                            <div class="s-value empty" id="summary-material">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Monitor -->
+            <div class="panel api-panel">
+                <div class="panel-head">
+                    <span>API Monitor</span>
+                    <span style="font-size:0.65rem;color:var(--muted);">newest first</span>
+                </div>
+                <div class="panel-body" id="api-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dashboard/script.js"></script>
+</body>
+</html>
